@@ -1,0 +1,95 @@
+
+
+
+- copy IRQ setup [ ]
+	- python [X]
+	- static [X]
+	- settings/urls [ ]
+	- test [X]
+
+
+- db [X]
+	- ppt [X]
+	- binary [X]
+	- rating [X]
+
+- get shapes [X]
+- generate beeps [X]
+
+- views [X]
+	- load pv data [X]
+
+- js
+	- update templates [X]
+	- intro [X]
+	- PV [X]
+		- 4 encode trials [v1, v3, a1, a3] [X]
+		- conditions [X]
+		- pv trial [X]
+		- 4 recall trials w/ conditions [X]
+
+	- WM recall trial [X]
+	- map keycodes [X]
+
+	- instructions [X]
+	- practice [X]
+		- visual [X]
+			- feedback [X]
+			- 4x [X]
+		- audio [X]
+		- pv [X]
+
+	- key hints [X]
+
+- translate stims [X]
+
+- randomize wm practice [X]
+- zero trials [X]
+	- no instructions [X]
+	- no recall [X]
+- second image not showing [X]
+
+- limits [X]
+
+- blocks [X]
+	- randomize assignment but keep ~48/3 crits in each block [X]
+	- roughly similar condition structure [X]
+	- block break [X]
+	- progressbar [X]
+	- test [X]
+
+- zero trial instructions [X]
+
+- debrief [X]
+- sound check [X]
+	- form w/ text input [X]
+	- replay if incorrect [X]
+
+- preloading [X]
+
+- check mapping between data cols and stimuli [X]
+	- 115 (L=1, son=rien) [X]
+
+- combined practice [x]
+	- create csv [x]
+	- load in with python [X]
+
+- store [ ]
+	- pv [ ]
+		- create & store trial_id [X]
+		- transform vé to critical [X]
+		- modality [X]
+		- tf [X]
+
+	- wm
+		- m, l, t [ ]
+
+	- irq [ ]
+
+- push [ ]
+
+- problems:
+	- new consent forms [ ]
+	- correlation between T and F wm/pv trials
+
+

@@ -1,0 +1,5 @@
+wm_type,item_id,wm_modality,wm_load,wm_instruction,Block,concept_fr,propriétés_fr,concept,property,son,sonb,image1,image2,image3,image1b,image2b,image3b,correct_response_wm,correct_response_pv,code,brepcon,brepload,item_type,item
+visu1,4,visual,1,You will see 1 image,3,PLANCHER,craquant,FLOOR,creaky,,,4.bmp,,,4.bmp,,,Same,True,véau1i6,1,c,visu1vv,48
+visu3,3,visual,3,You will see 3 image,2,FORET,ombragée,FOREST,shady,,,1.bmp,2.bmp,3.bmp,1.bmp,2.bmp,3.bmp,Same,True,vévi3i4,1,c,visu3vv,16
+audi1,1,audio,1,You will hear 1 sound,1,SANG,rouge,BLOOD,red,7.wav,7.wav,,,,,,,Same,True,vévi1s2,1,c,audi1vv,26
+audi3,2,audio,3,You will hear 3 sound,2,NUAGE,blanc,CLOUD,white,37.wav,37.wav,,,,,,,Same,True,vévi3s3,1,c,audi3vv,33

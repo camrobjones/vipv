@@ -1,0 +1,584 @@
+
+/* General */
+
+body {
+    margin:0;
+    font-family: 'Open Sans', 'Arial', sans-serif;
+    font-size:16px;
+}
+
+/* --- Header Bar --- */
+
+header.top-bar {
+    top: 0;
+    width: 100%;
+    background-color: #212121;
+    display: flex;
+    justify-content: space-between;
+    height: 72px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+    z-index: 4;
+    align-items: center;
+}
+
+h1#top-bar-title {
+    color: white;
+    font-family: 'Open Sans', 'Arial', sans-serif;
+    margin: 0 20px 0 30px;
+    font-size: 1.5em;
+    font-weight: 400;
+    min-width: 350px;
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+@media (max-width: 600px) {
+  h1#top-bar-title {
+    font-size: 4vw;
+    min-width: 40%;
+  }
+
+  div#progress-label {
+    font-size:4vw;
+  }
+}
+
+/* Progress Bar */
+
+div#progress-container {
+    width: 300px;
+    max-width: 40%;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    padding-right: 20px;
+}
+
+div#progress-label {
+    color: white;
+    margin-right: 20px;
+}
+
+div#progress-bar-container {
+    width: 200px;
+    height: 10px;
+    background: #444;
+    border-radius: 2px;
+}
+
+div#progress-bar {
+    height: 100%;
+    width: 1%;
+    background: white;
+    /* background: #ff8000; */
+    border-radius: inherit;
+}
+
+.hide {
+    display:none!important;
+}
+
+
+/* Experiment General */
+
+
+div#expt-container {
+    min-height: calc(100vh - 92px);
+    width: 92vw;
+    margin:0 auto;
+    font-size:1.4em;
+    margin-bottom:20px;
+}
+/*
+h2.instructions-header, h2.title {
+    font-size: 1.3em;
+    margin: 1.5em 0;
+    font-weight: 600;
+}
+*/
+p.welcome {
+    /*margin-bottom: 1em;*/
+}
+
+p.instructions {
+    text-align: justify;
+    display: inline-block;
+    /*margin-bottom: 1em;*/
+}
+
+p.instructions.c {
+    text-align: center;
+    display: block;
+}
+/*
+#continue {
+    margin-top:0.5em;
+}
+
+*/
+
+
+/* Property Verification */
+
+.example {
+    border: 1px solid #00000088;
+    padding:5px;
+}
+
+
+.response-label {font-weight: 600;}
+
+
+.key-reminder {
+    border: 2px solid black;
+    width: 35px;
+    height: 32px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 8px;
+    font-size: 20px;
+    font-weight: 500;
+}
+
+@media (max-width: 600px) {
+  .key-reminder {
+    width: 25px;
+    height: 23px;
+    line-height: 20px;
+    font-size: 15px;
+  }
+}
+
+.key-reminder-container {
+    display: flex;
+    justify-content: center;
+    padding-bottom: 10px;
+}
+
+
+.response-container {
+  display:flex;
+  justify-content: space-evenly;
+  min-height: 5em;
+}
+
+div.pv-container {
+    margin-bottom: 80px;
+}
+
+p.pv-concept {
+    font-size: 40px;
+}
+
+p.pv-property {
+    font-size: 40px;
+}
+
+p.pv-can-be {
+    font-size: 25px;
+}
+
+
+
+/* Affordances */
+
+div.question.likert.affordance {
+    width: 750px;
+    margin: auto;
+}
+
+p.stimulus.likert.affordance {
+    min-height: 180px
+}
+
+/* IRQ */
+
+div.question.likert.irq {
+    width: 750px;
+    margin: auto;
+}
+
+p.stimulus.likert.irq {
+    text-align: justify;
+    display: inline-block;
+}
+
+/* Mental Rotation */
+
+span.key-demo {
+    border: 2px solid black;
+    width: 25px;
+    height: 25px;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 5px;
+    font-size: 0.8em;
+    font-weight: 600;
+}
+
+.mr-keyhint-container {
+    display: flex;
+    justify-content: center;
+    font-size: 1em;
+}
+
+.mr-keyhint {
+    margin: 0 50px;
+    display: flex;
+}
+
+p.mr-keyhint-label {
+    margin-bottom: 5px;
+    font-size: 1.2em;
+    margin-top: 0;
+}
+
+.mr-feedback {
+    position: absolute;
+    top: 210px;
+    left: 300px;
+    font-size: 2em;
+    font-weight: 700;
+    text-shadow: 1px 1px 0px white;
+    visibility: hidden;
+}
+
+.mr-img-container {
+    position: relative;
+}
+
+#correct {
+    color: #0d920d;
+}
+
+#incorrect {
+    color: #FF0000;
+}
+
+#explanation {
+    visibility: hidden;
+}
+
+
+/* Alternative Uses */
+
+textarea.textbox.au {
+    width: 600px;
+    height: 200px;
+    margin-bottom: 20px;
+    vertical-align: top;
+    resize: none;
+    font-family: 'Open Sans', 'Arial', sans-serif;
+    font-size: 0.8em;
+    text-indent: 5px;
+    padding: 10px;
+}
+
+.au-header {
+    display: flex;
+    width: 600px;
+    margin: auto;
+    align-items: flex-end;
+    justify-content: space-between;
+}
+
+span#countdown {}
+
+.countdown-container {
+    font-size: 0.8em;
+}
+
+h3.question-title {
+    margin-bottom: 14px;
+}
+
+span#countdown-label {
+    font-weight: 600;
+    padding-right: 7px;
+}
+
+/* Demographics */
+
+
+div.debrief-container {
+    /*min-height: calc(90vh - 92px);*/
+}
+
+div.question.demographics {
+    /* display: flex; */
+    text-align: left;
+    color: #000000cc;
+    padding: 5px;
+    margin-bottom: 10px;
+    font-size:0.8em;
+    line-height: 1.2em;
+}
+
+h3.question-title.demographics {
+    margin-bottom: 0.5em;
+    font-size: 1em;
+    font-weight: 600;
+    color: #000000d1;
+}
+
+div.question.demographics input[type="number"], select {
+    width: 135px;
+    padding: 10px 5px;
+    font-size: 1.1em;
+    border-radius: 5px;
+    border: 1px solid #0000003b;
+    margin-top: 5px;
+    text-indent: 5px;
+}
+
+select.demographics {
+    height:43px;
+}
+
+.form-row.demographics {
+    display: flex;
+    font-size: 0.8em;
+    width: 777px;
+}
+
+.col.demographics {
+    flex: 1;
+}
+
+.radio-option.demographics {
+    display: flex;
+    align-items: center;
+    height: 2em;
+}
+
+input.demographics[type="radio" i] {
+    margin: 3px 7px 3px 3px;
+}
+
+div#language-box-container {
+    overflow-x: scroll;
+    padding: 10px;
+    border: 1px solid #00000033;
+    border-radius: 4px;
+}
+
+@media (max-width: 600px) {
+    .form-row.demographics {
+        font-size: 0.7em;
+        line-height: 1em;
+        width: 360px;
+    }
+
+    div#language-box-container {
+        
+    }
+
+    div.question.demographics input.demographics[type="number"], select.demographics {
+    width: 60px;
+    padding: 3px 3px;
+    font-size: 0.9em;
+    height: 25px;
+    /* line-height: 1em; */
+    }
+
+    select.demographics {
+        text-indent:0;
+    }
+
+}
+
+.col-header.demographics {
+    font-weight: 600;
+    padding: 0px 10px 0px 5px;
+    height: 100%;
+    display: flex;
+    align-items: center;
+}
+
+button#addLanguageButton {
+    margin: 10px 12px 0 0;
+    padding: 10px;
+    background: #000000ee;
+    color: white;
+    border-radius: 4px;
+    border: none;
+    box-shadow: 0px 1px 4px 1px #00000044;
+    cursor: pointer;
+}
+
+button#addLanguagesButton:hover {
+    background: #000000;
+    box-shadow: 0px 1px 4px 1px #00000044, 0px 1px 8px 2px #00000044;
+}
+
+/* Debrief */
+
+textarea.debrief {
+    width: 90%;
+    height: 5em;
+    border-radius: 5px;
+    border: 1px solid #00000054;
+    font-family: 'Open Sans', sans-serif;
+    padding:10px;
+    text-indent: 5px;
+    resize: none;
+    font-size: 0.8em;
+}
+
+h3.question-title.debrief {
+    margin-bottom: 0.5em;
+    font-size: 1em;
+    font-weight: 600;
+    color: #000000d1;
+}
+
+.radio-option.debrief {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+label.radio.debrief {
+    margin-left: 20px;
+}
+
+/* Completion Code */
+
+
+.code-container {
+    display: flex;
+    width: 470px;
+    margin: auto;
+    border: 1px solid #00000088;
+    /* padding: 5px 15px; */
+    border-radius: 8px;
+    justify-content: space-between;
+    position:relative;
+}
+
+@media (max-width: 600px) {
+    .code-container {
+        width: 280px;
+        font-size: 12px;
+    }
+}
+
+.code-copy {
+    display: flex;
+    padding: 5px 8px;
+    background: #00000022;
+    border-left: 1px solid #00000088;
+    cursor: pointer;
+    transition: box-shadow 0.1s;
+    border-radius: 0 8px 8px 0px;
+}
+
+div#code {
+    padding: 5px 10px;
+}
+
+.code-copy:hover {
+    background: #00000044;
+}
+
+.code-copy:active {
+    box-shadow: inset 0px 0 7px 2px #00000045;
+}
+
+.code-copy image {
+    width: 100%;
+}
+
+div#copy-confirm {
+    position: absolute;
+    top: -50px;
+    right: 0px;
+    background: #000000c4;
+    color: white;
+    padding: 2px 10px;
+    border-radius: 5px;
+    font-size: 0.8em;
+    transition: opacity 0.3s ease-in-out;
+    opacity: 0;
+}
+
+div#copy-confirm.show {
+    opacity:1;
+}
+
+
+
+/* --- Loader --- */
+/* https://projects.lukehaas.me/css-loaders/ */
+
+.loader,
+.loader:before,
+.loader:after {
+  background: #474747;
+  -webkit-animation: load1 1s infinite ease-in-out;
+  animation: load1 1s infinite ease-in-out;
+  width: 1em;
+  height: 4em;
+}
+
+.loader {
+  color: #474747;
+  text-indent: -9999em;
+  margin: 88px auto;
+  position: relative;
+  font-size: 11px;
+  -webkit-transform: translateZ(0);
+  -ms-transform: translateZ(0);
+  transform: translateZ(0);
+  -webkit-animation-delay: -0.16s;
+  animation-delay: -0.16s;
+}
+
+.loader:before,
+.loader:after {
+  position: absolute;
+  top: 0;
+  content: '';
+}
+
+.loader:before {
+  left: -1.5em;
+  -webkit-animation-delay: -0.32s;
+  animation-delay: -0.32s;
+}
+
+.loader:after {
+  left: 1.5em;
+}
+
+@-webkit-keyframes load1 {
+  0%,
+  80%,
+  100% {
+    box-shadow: 0 0;
+    height: 4em;
+  }
+  40% {
+    box-shadow: 0 -2em;
+    height: 5em;
+  }
+}
+
+@keyframes load1 {
+  0%,
+  80%,
+  100% {
+    box-shadow: 0 0;
+    height: 4em;
+  }
+  40% {
+    box-shadow: 0 -2em;
+    height: 5em;
+  }
+}
+
+.loader-container {
+    height: 100px;
+}

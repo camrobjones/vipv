@@ -1,0 +1,66 @@
+{% extends 'vipv/base.html' %}
+
+{% block head %}
+
+<title>Matching Task</title>
+
+<!-- reCAPTCHA -->
+ <script src="https://www.google.com/recaptcha/api.js?render=6Lc8nMwZAAAAAD9VUlj6EX69mgSSJ9ODDVPqrzJe"></script>
+
+{% endblock %}
+
+{% block navbar %}
+
+<header class='top-bar'>
+<h1 id='top-bar-title'>
+  Matching Task
+</h1>
+
+<div id='progress-container' class='hide'>
+  <div id='progress-label'>
+    0%
+  </div>
+  <div id='progress-bar-container'>
+    <div id='progress-bar'>
+    </div>
+  </div>
+
+</div>
+
+</header>
+
+{% endblock %}
+
+{% block content %}
+
+<div id='expt-container'>
+
+</div>
+
+<!-- Render django data as JSON scripts -->
+{{ tasks | json_script:"tasks"}}
+{{ conf | json_script:"conf"}}
+
+<script>
+
+// Load Stimuli Data
+const tasks = JSON.parse(document.getElementById('tasks')
+    .textContent);
+
+// Load Config Data
+const conf = JSON.parse(document.getElementById('conf')
+    .textContent);
+
+</script>
+
+<!-- HTML Templates -->
+{% include 'vipv/demographics.html' with handedness=0 languages=0 vision=1 conditions=1 %}
+
+<!-- Local JS -->
+<script src="/static/vipv/expt1a.js"></script>
+<script src="/static/vipv/vipv.js"></script>
+<script src="/static/vipv/irq.js"></script>
+<script src="/static/vipv/demographics.js"></script>
+
+
+{% endblock %}

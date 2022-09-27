@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+  <head>
+
+    <!-- Magic mobile scaling tag -->
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Favicon -->
+    <link rel="apple-touch-icon" sizes="180x180" href="/static/vipv/favicon/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/static/vipv/favicon/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/static/vipv/favicon/favicon-16x16.png">
+
+    <!-- jsPsych -->
+    <script src="/static/vipv/jspsych/jspsych.js"></script>
+    <script src="/static/vipv/jspsych/plugin-html-keyboard-response.js"></script>
+    <script src="/static/vipv/jspsych/plugin-image-keyboard-response.js"></script>
+    <script src="/static/vipv/jspsych/plugin-audio-keyboard-response.js"></script>
+    <script src="/static/vipv/jspsych/plugin-preload.js"></script>
+    <script src="/static/vipv/jspsych/plugin-fullscreen.js"></script>
+    <script src="/static/vipv/jspsych/plugin-survey-html-form.js"></script>
+    <link href="/static/vipv/jspsych/jspsych.css" rel="stylesheet" type="text/css"/>
+
+    <!--
+    <script src="https://unpkg.com/@jspsych/plugin-survey-text@1.1.1"></script>
+    <script src="https://unpkg.com/@jspsych/plugin-audio-keyboard-response@1.1.1"></script>
+    <script src="https://unpkg.com/@jspsych/plugin-audio-button-response@1.1.1"></script>
+    -->
+  
+
+
+    <!-- Axois -->
+    <script src="/static/vipv/axios/axios.min.js"></script>
+
+    <!-- Cookies -->
+    <script src="/static/vipv/cookies/cookies.min.js"></script>
+
+    <!-- Local CSS -->
+    <link href="/static/vipv/main_v1.css" rel="stylesheet" type="text/css"></link>
+    <link href="/static/vipv/likert.css" rel="stylesheet" type="text/css"></link>
+
+    <!-- Create CSRFToken -->
+    {% csrf_token %}
+
+    {% block head %}
+
+    <title>Memory Experiment</title>
+
+    {% endblock %}
+
+  </head>
+
+  <body>
+
+  {% block navbar %}
+
+  <header class='top-bar'>
+    <h1 id='top-bar-title'>
+      Memory Experiment
+    </h1>
+
+    <div id='progress-container' class='hide'>
+      <div id='progress-label'>
+        0%
+      </div>
+      <div id='progress-bar-container'>
+        <div id='progress-bar'>
+        </div>
+      </div>
+
+    </div>
+
+  </header>
+
+  {% endblock %}
+
+  {% block content %}
+
+  {% endblock %}
+
+  </body>
+</html>

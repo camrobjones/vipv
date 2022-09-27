@@ -1,0 +1,11 @@
+.DS_Store
+__pycache__
+data/results/*
+stats/.Rproj.user/
+stats/.RData
+stats/.RHistory
+stats/stats.Rproj
+.Rproj.user
+secrets.py
+scratch.py
+notes.txt

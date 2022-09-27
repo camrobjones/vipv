@@ -1,0 +1,64 @@
+
+/* Container */
+
+div.question.likert {
+}
+
+/* Titles */
+
+h2.section-title.likert {
+    margin-bottom: 1.5em;
+    font-size: 1em;
+    font-weight: 600;
+    color: #000000d1;
+}
+
+h3.question-title.likert {
+    margin-top: 5px;
+}
+
+/* Stimuli */
+
+p.stimulus.likert {
+    text-align: justify;
+}
+
+/* Response options */
+
+.option-container.likert {
+    display: flex;
+    width: 100%;
+    justify-content: space-between;
+    margin: 25px 0 20px 0;
+}
+
+.radio-option.likert {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    height: auto;
+    padding: 0 5px;
+    align-items: center;
+}
+
+label.radio-label.likert {
+    text-align: center;
+    width: 100%;
+    cursor: pointer;
+}
+
+input.likert {
+    margin: 0 3px;
+    padding: 10px;
+    width: 100%;
+    cursor: pointer;
+}
+
+ol.instructions {
+    text-align: justify;
+    margin-left: 2em;
+}
+
+label.radio-label.likert.bottom {
+    font-size: 0.8em;
+}

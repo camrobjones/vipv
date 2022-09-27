@@ -1,0 +1,5 @@
+list,list_idx,list_id,item_type,pv_modality,correct_response_pv,concept,property,item_id,wm_modality,wm_load,wm_instruction,correct_response_wm,son,sonb,image1,image2,image3,image1b,image2b,image3b
+practice,0,practice_0,practice,au,False,LAMP,screaming,p_1,audio,1,You will hear 1 sound,Same,7.wav,7.wav,,,,,,
+practice,1,practice_1,practice,o,True,PILLOW,soft,p_2,audio,3,You will hear 3 sounds,Different,31.wav,32.wav,,,,,,
+practice,2,practice_2,practice,o,True,STRAWBERRY,sweet,p_3,visual,1,You will see 1 image,Different,,,1.bmp,,,4.bmp,,
+practice,3,practice_3,practice,vi,False,APPLE,purple,p_4,visual,3,You will see 3 images,Same,,,2.bmp,3.bmp,4.bmp,2.bmp,3.bmp,4.bmp
