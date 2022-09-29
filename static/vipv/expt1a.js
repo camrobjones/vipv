@@ -76,7 +76,7 @@ function saveResults() {
 
         <p class='instructions'>
           Sorry, something went wrong and we were unable to grant your SONA credit
-          automatically. Please send an email to achkhaid@ucsd.edu, including
+          automatically. Please send an email to c8jones@ucsd.edu, including
           your participant ID (${conf.ppt_id}).
         </p>
 
