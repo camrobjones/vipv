@@ -14,7 +14,7 @@ function store_response_wm(data) {
   } else {
     data.response_hr = "<Other>";
   }
-  data.is_correct = data.response_hr === data.correct_response_wm;
+  data.is_correct = data.response_hr === data.correct_response;
 }
 
 
@@ -28,7 +28,7 @@ function store_response_pv(data) {
   } else {
     data.response_hr = "<Other>";
   }
-  data.is_correct = data.response_hr === data.correct_response_pv;
+  data.is_correct = data.response_hr === data.correct_response;
 }
 
 
@@ -86,7 +86,7 @@ var vis_encode_1 = {
       }
     ],
     conditional_function: function() {
-      return jsPsych.timelineVariable("wm_modality") == "visual" && jsPsych.timelineVariable("wm_load") == "1"
+      return jsPsych.timelineVariable("wm_modality") == "vi" && jsPsych.timelineVariable("wm_load") == "1"
     }
   };
 
@@ -121,7 +121,7 @@ var vis_encode_3 = {
       }
     ],
     conditional_function: function() {
-      return jsPsych.timelineVariable("wm_modality") == "visual" && jsPsych.timelineVariable("wm_load") == "3"
+      return jsPsych.timelineVariable("wm_modality") == "vi" && jsPsych.timelineVariable("wm_load") == "3"
     }
   };
 
@@ -139,7 +139,7 @@ var aud_encode_1 = {
       }
     ],
     conditional_function: function() {
-      return jsPsych.timelineVariable("wm_modality") == "audio" && jsPsych.timelineVariable("wm_load") == "1"
+      return jsPsych.timelineVariable("wm_modality") == "au" && jsPsych.timelineVariable("wm_load") == "1"
     }
 };
 
@@ -156,7 +156,7 @@ var aud_encode_3 = {
       }
     ],
     conditional_function: function() {
-      return jsPsych.timelineVariable("wm_modality") == "audio" && jsPsych.timelineVariable("wm_load") == "3"
+      return jsPsych.timelineVariable("wm_modality") == "au" && jsPsych.timelineVariable("wm_load") == "3"
     }
 };
 
@@ -175,7 +175,7 @@ var vis_recall_1 = {
       }
     ],
     conditional_function: function() {
-      return jsPsych.timelineVariable("wm_modality") == "visual" && jsPsych.timelineVariable("wm_load") == "1"
+      return jsPsych.timelineVariable("wm_modality") == "vi" && jsPsych.timelineVariable("wm_load") == "1"
     }
   };
 
@@ -192,6 +192,7 @@ var vis_recall_3 = {
       },
       {
         type: jsPsychImageKeyboardResponse,
+
         stimulus: function(){
           return "/static/vipv/stimuli/"+jsPsych.timelineVariable('image2b')
         },
@@ -210,7 +211,7 @@ var vis_recall_3 = {
       }
     ],
     conditional_function: function() {
-      return jsPsych.timelineVariable("wm_modality") == "visual" && jsPsych.timelineVariable("wm_load") == "3"
+      return jsPsych.timelineVariable("wm_modality") == "vi" && jsPsych.timelineVariable("wm_load") == "3"
     }
   };
 
@@ -228,7 +229,7 @@ var aud_recall_1 = {
       }
     ],
     conditional_function: function() {
-      return jsPsych.timelineVariable("wm_modality") == "audio" && jsPsych.timelineVariable("wm_load") == "1"
+      return jsPsych.timelineVariable("wm_modality") == "au" && jsPsych.timelineVariable("wm_load") == "1"
     }
 };
 
@@ -245,7 +246,7 @@ var aud_recall_3 = {
       }
     ],
     conditional_function: function() {
-      return jsPsych.timelineVariable("wm_modality") == "audio" && jsPsych.timelineVariable("wm_load") == "3"
+      return jsPsych.timelineVariable("wm_modality") == "au" && jsPsych.timelineVariable("wm_load") == "3"
     }
 };
 
@@ -257,8 +258,18 @@ var WM_recall_response = {
         type: jsPsychHtmlKeyboardResponse,
         data: function() {
           return {
-            correct_response_wm: jsPsych.timelineVariable('correct_response_wm')
-          }
+              trial_part: 'trial',
+              task: 'WM',
+              item: jsPsych.timelineVariable('item_id'),
+              item_id: jsPsych.timelineVariable('item_id'),
+              block_id: jsPsych.timelineVariable('block_id'),
+              trial_id: jsPsych.timelineVariable('trial_id'),
+              item_type: jsPsych.timelineVariable('item_type'),
+              version: jsPsych.timelineVariable('wm_load'),
+              version_id: jsPsych.timelineVariable('wm_load') + "_" + jsPsych.timelineVariable('wm_modality'),
+              condition: jsPsych.timelineVariable('wm_modality'),
+              correct_response: jsPsych.timelineVariable('correct_response_wm')
+          };
         },
         stimulus: `
           <p>Were the sequences identical or different?</p>
@@ -331,10 +342,10 @@ var pvTrial = {
         block_id: jsPsych.timelineVariable('block_id'),
         trial_id: jsPsych.timelineVariable('trial_id'),
         item_type: jsPsych.timelineVariable('item_type'),
-        version: jsPsych.timelineVariable('version'),
-        version_id: jsPsych.timelineVariable('version_id'),
+        version: "",
+        version_id: "",
         condition: jsPsych.timelineVariable('pv_modality'),
-        correct_response_pv: jsPsych.timelineVariable('correct_response_pv')
+        correct_response: jsPsych.timelineVariable('correct_response_pv')
     };
   },
   // Build stimulus
@@ -457,8 +468,8 @@ var audioTest = {
 
       <div class='input-container'>
 
-        <button id="audioTestReplay" class="jspsych-btn" onclick="replayAudio"
-        type="replay" submit=false>
+        <button id="audioTestReplay" class="jspsych-btn" onclick="document.getElementById('audio').play()"
+        type="button">
           Replay
         </button>
 
@@ -477,8 +488,6 @@ var audioTest = {
 var audioTestLoop = {
     timeline: [audioTest],
     loop_function: function(data){
-        console.log(data);
-        console.log(data.values()[0].response.audioTestInput);
         if(data.values()[0].response.audioTestInput == "cat"){
             return false;
         } else {
@@ -509,7 +518,7 @@ var vipv_main_instructions = {
     <p class='instructions'>
       On some trials, there will not be any sequence to remember, and you will only have to verify a property.
       On other trials there will be a sequence of either 1 or 3 elements.
-      You will no longer recieve feedback on your responses.
+      You will no longer receive feedback on your responses.
     </p>
 
     <p class='instructions' id='continue' ontouchstart="response(32)">
@@ -539,7 +548,7 @@ var wm_practice_feedback = {
   stimulus: function() {
     let last_trial = jsPsych.data.get().last(1).values()[0];
     let outcome = last_trial.is_correct ? "Correct" : "Incorrect"
-    let correct_response = last_trial.correct_response_wm == "Same" ? "identical" : "different"
+    let correct_response = last_trial.correct_response == "Same" ? "identical" : "different"
     return `
       <h3>${outcome}</h3>
       <p>The sequences were ${correct_response}.</p>
@@ -554,7 +563,7 @@ var pv_practice_feedback = {
   stimulus: function() {
     let last_trial = jsPsych.data.get().last(1).values()[0];
     let outcome = last_trial.is_correct ? "Correct" : "Incorrect"
-    let correct_response = last_trial.correct_response_pv == true ? "true" : "false"
+    let correct_response = last_trial.correct_response == true ? "true" : "false"
     return `
       <h3>${outcome}</h3>
       <p>The statement was ${correct_response}.</p>
@@ -589,7 +598,7 @@ var vis_practice_instructions = {
     </p>
 
     <p class='instructions'>
-      After you give your response, you will recieve feedback on whether your response was
+      After you give your response, you will receive feedback on whether your response was
       correct or incorrect.
     </p>
 
@@ -606,7 +615,12 @@ var vis_practice_instructions = {
 
 let vis_practice_data = [
   {
-    wm_modality: 'visual',
+    item: "vis_practice_1",
+    item_id: "vis_practice_1",
+    block_id: "vis_practice_1",
+    trial_id: "vis_practice_1_1",
+    item_type: "practice",
+    wm_modality: 'vi',
     wm_load: 1,
     wm_instruction: 'You will see 1 image',
     image1: "8.bmp",
@@ -620,7 +634,12 @@ let vis_practice_data = [
     correct_response_wm: "Same"
   },
   {
-    wm_modality: 'visual',
+    item: "vis_practice_2",
+    item_id: "vis_practice_2",
+    block_id: "vis_practice_1",
+    trial_id: "vis_practice_1_2",
+    item_type: "practice",
+    wm_modality: 'vi',
     wm_load: 3,
     wm_instruction: 'You will see 3 images',
     image1: "1.bmp",
@@ -634,7 +653,12 @@ let vis_practice_data = [
     correct_response_wm: "Different"
   },
   {
-    wm_modality: 'visual',
+    item: "vis_practice_3",
+    item_id: "vis_practice_3",
+    block_id: "vis_practice_1",
+    trial_id: "vis_practice_1_3",
+    item_type: "practice",
+    wm_modality: 'vi',
     wm_load: 3,
     wm_instruction: 'You will see 3 images',
     image1: "4.bmp",
@@ -648,7 +672,12 @@ let vis_practice_data = [
     correct_response_wm: "Same"
   },
   {
-    wm_modality: 'visual',
+    item: "vis_practice_4",
+    item_id: "vis_practice_4",
+    block_id: "vis_practice_1",
+    trial_id: "vis_practice_1_4",
+    item_type: "practice",
+    wm_modality: 'vi',
     wm_load: 1,
     wm_instruction: 'You will see 1 image',
     image1: "9.bmp",
@@ -727,7 +756,7 @@ var aud_practice_instructions = {
     </p>
 
     <p class='instructions'>
-      After you give your response, you will recieve feedback on whether your response was
+      After you give your response, you will receive feedback on whether your response was
       correct or incorrect.
     </p>
 
@@ -744,7 +773,12 @@ var aud_practice_instructions = {
 
 let aud_practice_data = [
   {
-    wm_modality: 'audio',
+    item: "aud_practice_1",
+    item_id: "aud_practice_1",
+    block_id: "aud_practice_1",
+    trial_id: "aud_practice_1_1",
+    item_type: "practice",
+    wm_modality: 'au',
     wm_load: 1,
     wm_instruction: 'You will hear 1 sound',
     image1: "",
@@ -758,7 +792,12 @@ let aud_practice_data = [
     correct_response_wm: "Same"
   },
   {
-    wm_modality: 'audio',
+    item: "aud_practice_2",
+    item_id: "aud_practice_2",
+    block_id: "aud_practice_1",
+    trial_id: "aud_practice_1_2",
+    item_type: "practice",
+    wm_modality: 'au',
     wm_load: 3,
     wm_instruction: 'You will hear 3 sounds',
     image1: "",
@@ -772,7 +811,12 @@ let aud_practice_data = [
     correct_response_wm: "Different"
   },
   {
-    wm_modality: 'audio',
+    item: "aud_practice_3",
+    item_id: "aud_practice_3",
+    block_id: "aud_practice_1",
+    trial_id: "aud_practice_1_3",
+    item_type: "practice",
+    wm_modality: 'au',
     wm_load: 3,
     wm_instruction: 'You will hear 3 sounds',
     image1: "",
@@ -786,7 +830,12 @@ let aud_practice_data = [
     correct_response_wm: "Same"
   },
   {
-    wm_modality: 'audio',
+    item: "aud_practice_4",
+    item_id: "aud_practice_4",
+    block_id: "aud_practice_1",
+    trial_id: "aud_practice_1_4",
+    item_type: "practice",
+    wm_modality: 'au',
     wm_load: 1,
     wm_instruction: 'You will hear 1 sound',
     image1: "",
@@ -864,7 +913,7 @@ var pv_practice_instructions = {
     </p>
 
     <p class='instructions'>
-      After you give your response, you will recieve feedback on whether your response was
+      After you give your response, you will receive feedback on whether your response was
       correct or incorrect.
     </p>
 
@@ -881,24 +930,56 @@ var pv_practice_instructions = {
 
 let pv_practice_data = [
   {
-    concept: "SNOW",
-    property: "white",
+    item: "pv_practice_1",
+    item_id: "pv_practice_1",
+    block_id: "pv_practice_1",
+    trial_id: "pv_practice_1_1",
+    item_type: "practice",
+    version: "",
+    version_id: "",
+    pv_modality: "au",
+    concept: "ALARM",
+    property: "ringing",
     correct_response_pv: true
   },
   {
-    concept: "ZEBRA",
-    property: "striped",
-    correct_response_pv: true
-  },
-  {
+    item: "pv_practice_2",
+    item_id: "pv_practice_2",
+    block_id: "pv_practice_1",
+    trial_id: "pv_practice_1_2",
+    item_type: "practice",
+    version: "",
+    version_id: "",
+    pv_modality: "vi",
     concept: "ROBIN",
     property: "lilac",
     correct_response_pv: false
   },
   {
-    concept: "RECORDER",
-    property: "strummed",
+    item: "pv_practice_3",
+    item_id: "pv_practice_3",
+    block_id: "pv_practice_1",
+    trial_id: "pv_practice_1_3",
+    item_type: "practice",
+    version: "",
+    version_id: "",
+    pv_modality: "o",
+    concept: "BRICK",
+    property: "rolled",
     correct_response_pv: false
+  },
+  {
+    item: "pv_practice_4",
+    item_id: "pv_practice_4",
+    block_id: "pv_practice_1",
+    trial_id: "pv_practice_1_4",
+    item_type: "practice",
+    version: "",
+    version_id: "",
+    pv_modality: "o",
+    concept: "STUDENT",
+    property: "clever",
+    correct_response_pv: true
   },
 ]
 
@@ -956,7 +1037,7 @@ var interBlockBreak = {
     </p>
 
     <p class='instructions'>
-      You will be able to advance to the next block 
+      You will be able to advance to the next block
       after <span id='breakTime'>20</span>s.
     </p>
 
@@ -965,9 +1046,14 @@ var interBlockBreak = {
   on_load: function() {
     function decrementTimer() {
       let breakTime = document.getElementById("breakTime");
+
+      if (breakTime == null) {
+        return false
+      }
+
       let remaining = breakTime.innerText;
 
-      if (remaining > 2) {
+      if (remaining > 1)  {
         remaining -= 1;
         breakTime.innerText = remaining;
         setTimeout(decrementTimer, 1000);
@@ -1061,7 +1147,7 @@ if ("pv" in tasks) {
     pvTimeline = pvTimeline.concat([
       pv_practice_instructions, pv_practice_timeline, pv_practice_end
       ])
-    pvTrialCount += 3;
+    pvTrialCount += 6;
 
     if (Math.random() > 0.5) {
       pvTimeline = pvTimeline.concat(
@@ -1076,7 +1162,7 @@ if ("pv" in tasks) {
       )
     }
 
-    pvTrialCount += 6;
+    pvTrialCount += 4;
   }
 
   pvTimeline = pvTimeline.concat([

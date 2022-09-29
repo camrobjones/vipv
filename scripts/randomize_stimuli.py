@@ -27,7 +27,7 @@ stimuli["image1b"] = stimuli["1b"]
 stimuli["image2b"] = stimuli["2b"]
 stimuli["image3b"] = stimuli["3b"]
 
-stimuli["wm_modality"] = stimuli["wmm"].map({"au":"audio", "vi": "visual"})
+stimuli["wm_modality"] = stimuli["wmm"]
 stimuli["wm_load"] = stimuli["wml"]
 stimuli["pv_modality"] = stimuli["pvm"].map({"FV": "F", "VF": "F", "au": "au", "vi": "vi"})
 

@@ -75,21 +75,40 @@
 	- load in with python [X]
 
 - store [ ]
-	- pv [ ]
+	- pv [X]
 		- create & store trial_id [X]
 		- transform vé to critical [X]
 		- modality [X]
 		- tf [X]
 
 	- wm
-		- m, l, t [ ]
+		- m, l, t [X]
 
-	- irq [ ]
+	- irq [X]
+
+	- test [X]
+
+- rename post_test_variation [X]
+
+- update consent forms [X]
+
+- Ben feedback
+	- first time failed to load [X]
+	- second time advanced from sound check even though I pressed replay [X]
+	- Sounds Memory Practice instructions: receive typo (recieve) [X]
+	- Same on combined task instructions [X]
+	- one of the sounds might not be audible to some folks (the highest pitch one I heard) [X]
+	- not sure what to expect from this question: “Did you notice any systematic variation in the types of tasks you were being asked to do?” [X]
+
+- update SONA codes [X]
+
+- check stimuli criticals [X]
+
+- test timing [ ]
 
 - push [ ]
 
 - problems:
-	- new consent forms [ ]
 	- correlation between T and F wm/pv trials
 
 

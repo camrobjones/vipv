@@ -202,10 +202,10 @@ def store_rating_results(data, ppt):
         rating.save()
 
 
-def store_pv_results(data, ppt):
+def store_binary_results(data, ppt):
     """Store results from rating trials."""
     trials = [item for item in data
-              if item.get('task') == "PV" and
+              if item.get('task') in ["PV", "WM"] and
               item.get('trial_part') == "trial"]
 
     for trial_data in trials:
@@ -229,7 +229,7 @@ def store_pv_results(data, ppt):
             # Response info
             key_press=trial_data.get('response'),
             response=trial_data.get('response_hr'),
-            correct_response=trial_data.get('correct_response_pv'),
+            correct_response=trial_data.get('correct_response'),
             is_correct=trial_data.get('is_correct'),
             reaction_time=trial_data.get('rt')
         )
@@ -304,7 +304,7 @@ def save_results(request):
     store_rating_results(data, ppt)
     store_demographics(data, ppt)
     # store_subject_code(data, ppt)
-    store_pv_results(data, ppt)
+    store_binary_results(data, ppt)
     store_debrief(data, ppt)
 
     ppt.end_time = tz.now()

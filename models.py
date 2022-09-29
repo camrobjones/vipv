@@ -42,7 +42,7 @@ class Participant(models.Model):
 
     # Feedback
     post_test_purpose = models.TextField(default="")
-    post_test_variation = models.TextField(default="")
+    post_test_relationship = models.TextField(default="")
     post_test_strategy = models.TextField(default="")
     post_test_simulation = models.TextField(default="")
     post_test_modality = models.TextField(default="")
@@ -108,21 +108,21 @@ class BinaryChoice(models.Model):
     item_type = models.CharField(  # Critical/Filler etc
         max_length=80, blank=True)
     version = models.CharField(  # Item version
-        max_length=10, blank=True, default="")
+        max_length=80, blank=True, default="")
     version_id = models.CharField(max_length=80)  # Unique Version ID w/in task
     condition = models.CharField(
         max_length=80, blank=True, default="")  # Condition
     trial_index = models.IntegerField(blank=True, null=True)  # Index for ppt
     trial_id = models.CharField(  # Relate interference trials
-        max_length=10,
+        max_length=80,
         default="")
     block_id = models.CharField(  # Trial block
-        max_length=10,
+        max_length=80,
         default="")
 
     # Response info
     key_press = models.CharField(  # Key pressed
-        max_length=10,
+        max_length=80,
         default="")
     response = models.CharField(  # Participant response to question
         max_length=80,

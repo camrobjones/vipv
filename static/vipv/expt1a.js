@@ -239,7 +239,6 @@ function updateProgress() {
   // Increment progress
   current_trial += 1;
   let pc = Math.round(current_trial * 100 / trialCount);
-  console.log("updateProgress" + current_trial)
 
   // Show progress container
   let container = document.getElementById('progress-container');
@@ -304,10 +303,10 @@ var consent = {
               you agree to participate.
               </p>
 
-              <a target="_blank" href="/static/vipv/consent.pdf">Open in a new tab</a>
+              <a target="_blank" href="/static/vipv/consent_2022.pdf">Open in a new tab</a>
               
               <div id='consent-container'>
-                <iframe src="/static/vipv/consent.pdf#view=FitH&zoom=FitH"
+                <iframe src="/static/vipv/consent_2022.pdf#view=FitH&zoom=FitH"
                 width="100%", height="800px"></iframe>
               </div>
 
@@ -373,7 +372,7 @@ var post_test_purpose = {
   }
 };
 
-var post_test_variation = {
+var post_test_relationship = {
 
   // Post Test Questionnaire
   type: jsPsychSurveyHtmlForm,
@@ -383,10 +382,10 @@ var post_test_variation = {
   <div class='debrief-container'>
     <div class='question'>
       <h3 class='question-title debrief'>
-        Did you notice any systematic variation in the types of tasks you were being asked to do?
+        Did you notice any relationship between the memory tasks and the property verification task?
       </h3>
     
-      <textarea class="form-control debrief" id="post_test_variation" name="post_test_variation"
+      <textarea class="form-control debrief" id="post_test_relationship" name="post_test_relationship"
       required></textarea>
     </div>
   </div>`,
@@ -563,9 +562,9 @@ window.onload = function() {
 
   /* ---- Debrief ---- */
 
-  timeline.push(post_test_purpose, post_test_variation, post_test_strategy,
+  timeline.push(post_test_purpose, post_test_relationship, post_test_strategy,
                 post_test_simulation, post_test_modality, post_test_other, debrief_block);
-  trialCount += 7;
+  trialCount += 6;
 
   if (! isTouch) {
 
