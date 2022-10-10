@@ -1,0 +1,799 @@
+---
+title: "Vermeulen et al. (2008) Replication: Pilot Analysis"
+author: "Cameron Jones"
+date: "2022-10-03"
+output:
+  html_document: 
+    toc: yes
+    toc_float: yes
+    theme: flatly
+    highlight: kate
+    code_folding: hide
+    number_sections: yes
+    df_print: kable
+---
+
+# Setup
+
+## Imports
+
+```{r}
+
+## Load packages
+suppressMessages(library(tidyverse))
+suppressMessages(library(lmerTest))
+suppressMessages(library(MuMIn))
+suppressMessages(library(broom.mixed))
+suppressMessages(library(lavaan))
+suppressMessages(library(reshape2))
+suppressMessages(library(psych))
+suppressMessages(library(glue))
+suppressMessages(library(optimx))
+
+# Read local files
+source("utils.R")
+
+```
+
+## Parameters
+
+```{r}
+
+# Region reading time limits
+rt.rel.sd = 2
+rt.abs.min.pv = 300 # ms
+rt.abs.max.pv = 3000 # ms
+rt.abs.min.wm = 200 # ms
+rt.abs.max.wm = 3000 # ms
+rt.abs.max.irq = 120000 # ms
+rt.abs.min.irq = 300 # ms
+
+# Attention accuracy cutoff (retain if accuracy >= val)
+cutoff.pv.accuracy = 0.66
+cutoff.wm.accuracy = 0.66
+cutoff.irq.attention = 0.66
+
+# Exclude ppt with X% trials excluded
+cutoff.removed.trials = 0.34
+
+# lmer Control
+optimxlmerControl <- lmerControl(optimizer = "optimx", optCtrl = list(method = "nlminb"))
+
+optimxglmerControl <- glmerControl(optimizer = "optimx", optCtrl = list(method = "nlminb"))
+
+```
+
+
+## Read in data
+
+```{r}
+
+# Load data
+ppts.raw <- read.csv("data/vipv_participant.csv")
+rating <- read.csv("data/vipv_rating.csv")
+binary <- read.csv("data/vipv_binary.csv")
+irq.og <- read.csv("data/irq.csv")
+
+```
+
+## Filter by study
+
+```{r}
+
+# Preprocess participants
+ppts.all <- preprocess.ppts(
+  ppts.raw, "pilot")
+
+
+pv.all <- binary %>%
+  filter(participant_id %in% ppts.all$id,
+         task == "PV") %>%
+  mutate(accuracy = ifelse(is_correct == "True", 1, 0))
+
+pv.critical.all <- pv.all %>% filter(item_type == "critical")
+
+wm.all <- binary %>%
+  filter(participant_id %in% ppts.all$id,
+         task == "WM") %>%
+  mutate(accuracy = ifelse(is_correct == "True", 1, 0))
+
+wm.critical.all <- wm.all %>% filter(item_type == "critical")
+
+irq.all <- rating %>%
+  filter(participant_id %in% ppts.all$id,
+         scale == "IRQ")
+
+rm(ppts.raw)
+rm(binary)
+rm(rating)
+
+```
+
+# Preprocess
+
+## Participant Exclusions
+
+### Demographics
+
+```{r}
+
+
+# Exclude ppts
+ppts.all <- exclude.ppts(ppts.all, native.eng=T, vision=T)
+
+```
+
+
+### PV Accuracy
+
+```{r}
+
+ppts.all <- exclude.ppts.accuracy(ppts.all, pv.all,  "pv", cutoff.pv.accuracy)
+
+```
+
+`r round(nrow(ppts.all %>% filter(pv.accuracy>0.66)) / nrow(ppts.all), 2) * 100`% of ppts got > 66% of PV trials correct.
+
+```{r}
+
+ppts.all %>%
+  ggplot(aes(x = pv.accuracy, fill=excluded)) + 
+  geom_histogram(bins=30) + 
+  theme_minimal() + 
+  scale_fill_manual("Excluded",
+     labels = c("Retained", "Excluded"),
+     values = c("#1eb809", "#cc0502")) + 
+  labs(
+    x = "PV Accuracy",
+    y = "No. Participants"
+  )
+
+```
+
+Participants who scored <66%:
+
+```{r}
+
+ppts.all %>%
+  filter(pv.accuracy < 0.66) %>%
+  select(participant_id, pv.accuracy)
+
+```
+
+### WM Accuracy
+
+```{r}
+
+ppts.all <- exclude.ppts.accuracy(ppts.all, wm.all,  "wm", cutoff.wm.accuracy)
+
+```
+
+`r round(nrow(ppts.all %>% filter(wm.accuracy>0.66)) / nrow(ppts.all), 2) * 100`% of ppts got > 66% of WM trials correct.
+
+```{r}
+
+ppts.all %>%
+  ggplot(aes(x = wm.accuracy, fill=excluded)) + 
+  scale_fill_manual("Excluded",
+     labels = c("Retained", "Excluded"),
+     values = c("#1eb809", "#cc0502")) + 
+  geom_histogram(bins=30) + 
+  theme_minimal() + 
+  labs(
+    x = "WM Accuracy",
+    y = "No. Participants"
+  )
+
+```
+
+Participants who scored <66%:
+
+```{r}
+
+ppts.all %>%
+  filter(wm.accuracy < 0.66) %>%
+  select(participant_id, wm.accuracy)
+
+```
+### Summarize exclusions
+
+```{r}
+
+ppts <- ppts.all %>% filter(excluded == 0)
+
+summarise.exclusions(ppts.all)
+
+```
+
+## Trial Exclusions
+
+### Property Verification
+
+Red dotted lines indicate exclusion criteria at `r rt.abs.min.pv`ms and `r rt.abs.max.pv`ms.
+
+```{r}
+
+
+
+pv.critical.all %>%
+  merge(ppts.all %>% select(participant_id, excluded)) %>%
+  ggplot(aes(x = reaction_time / 1000, fill=excluded)) + 
+  geom_histogram(bins=30) + 
+  scale_x_log10() + 
+  theme_minimal() + 
+  geom_vline(xintercept=rt.abs.min.pv / 1000, color="red", linetype="dashed") +
+  geom_vline(xintercept=rt.abs.max.pv / 1000, color="red", linetype="dashed") +
+  scale_fill_manual("Excluded",
+     labels = c("Retained", "Excluded"),
+     values = c("#1eb809", "#cc0502")) + 
+  labs(
+    x = "Property verification reaction times (s)",
+    y = "No. Trials"
+  )
+
+
+```
+
+```{r}
+
+pv.critical.all %>%
+  ggplot(aes(x = reaction_time, y=accuracy)) + 
+  stat_summary_bin(fun.data = mean_cl_boot, geom="point") + 
+  stat_summary_bin(fun.data = mean_cl_boot, geom="errorbar") + 
+  geom_smooth(method="lm", formula="y~x") +
+  theme_minimal() + 
+  geom_vline(xintercept=rt.abs.min.pv, color="red", linetype="dashed") +
+  geom_vline(xintercept=rt.abs.max.pv, color="red", linetype="dashed") +
+  scale_x_log10() + 
+  labs()
+
+```
+
+PV trial exclusion summary:
+
+```{r}
+
+pv.critical.all <- pv.critical.all %>% 
+  
+  filter(participant_id %in% ppts$id,  # Remove trials from excluded participants
+         ) %>%
+  # Exclude extreme rts
+  exclude.relative.by.ppt(reaction_time, rt.rel.sd) %>%
+  exclude.absolute.by.ppt(reaction_time, rt.abs.min.pv, rt.abs.max.pv)
+
+  
+res = exclude.ppt.ex.trials(
+  ppts.all, pv.critical.all, cutoff.removed.trials, "ex.pv.ex.trials")
+
+ppts.all <- res$ppts
+pv.critical.all <- res$trials  # TODO: Hacky. Better method?
+
+pv.critical <- pv.critical.all %>% filter(excluded==FALSE)
+
+summarise.exclusions(pv.critical.all)
+
+```
+
+Remove excluded participants:
+
+```{r}
+
+ppts <- ppts.all %>% filter(excluded == 0)
+
+```
+
+### Working Memory
+
+Red dotted lines indicate exclusion criteria at `r rt.abs.min.wm`ms and `r rt.abs.max.wm`ms.
+
+```{r}
+
+wm.critical.all %>%
+  merge(ppts.all %>% select(participant_id, excluded)) %>%
+  ggplot(aes(x = reaction_time / 1000, fill=excluded)) + 
+  geom_histogram(bins=30) + 
+  scale_x_log10() + 
+  theme_minimal() + 
+  geom_vline(xintercept=rt.abs.min.wm / 1000, color="red", linetype="dashed") +
+  geom_vline(xintercept=rt.abs.max.wm / 1000, color="red", linetype="dashed") +
+  scale_fill_manual("Excluded",
+     labels = c("Retained", "Excluded"),
+     values = c("#1eb809", "#cc0502")) + 
+  labs(
+    x = "WM RT (s)",
+    y = "No. Trials"
+  )
+
+```
+
+
+```{r}
+
+wm.critical.all %>%
+  ggplot(aes(x = reaction_time, y=accuracy)) + 
+  stat_summary_bin(fun.data = mean_cl_boot, geom="point") + 
+  stat_summary_bin(fun.data = mean_cl_boot, geom="errorbar") + 
+  geom_smooth(method="lm", formula="y~x") +
+  theme_minimal() + 
+  geom_vline(xintercept=rt.abs.min.wm, color="red", linetype="dashed") +
+  geom_vline(xintercept=rt.abs.max.wm, color="red", linetype="dashed") +
+  scale_x_log10() + 
+  labs()
+
+```
+
+WM trial exclusion summary:
+
+```{r}
+wm.critical.all <- wm.critical.all %>% 
+  
+  filter(participant_id %in% ppts$id,  # Remove trials from excluded participants
+  ) %>%
+  
+  # Exclude extreme rts
+  exclude.relative.by.ppt(reaction_time, rt.rel.sd) %>%
+  exclude.absolute.by.ppt(reaction_time, rt.abs.min.wm, rt.abs.max.wm)
+
+
+res = exclude.ppt.ex.trials(
+  ppts.all, wm.critical.all, cutoff.removed.trials, "ex.wm.ex.trials")
+
+ppts.all <- res$ppts
+corsi.all <- res$trials
+
+wm.critical <- wm.critical.all %>% filter(excluded==FALSE)
+
+summarise.exclusions(wm.critical.all)
+```
+
+Remove excluded participants:
+
+```{r}
+
+ppts <- ppts.all %>% filter(excluded == 0)
+
+```
+
+
+## Item Analysis
+
+```{r}
+
+pv.critical %>%
+  group_by(item) %>%
+  summarize(accuracy = mean(accuracy))  %>%
+  ggplot(aes(x = accuracy)) +
+  geom_histogram(aes(y=..count../sum(..count..) * 100), bins=10) + 
+  labs(y = "Proportion of items")
+
+```
+
+```{r}
+
+pv.critical %>%
+  group_by(item) %>%
+  summarize(accuracy = mean(accuracy))  %>%
+  filter(accuracy < 1) %>%
+  ggplot(aes(x = reorder(item, -accuracy), y = accuracy)) +
+  geom_point()
+
+```
+
+```{r}
+
+pv.critical %>%
+  group_by(item) %>%
+  summarize(
+    reaction_time = mean(reaction_time),
+    accuracy = mean(accuracy)
+  ) %>%
+  arrange(accuracy)
+
+```
+
+
+# Interference Task
+
+## Preliminary
+
+### Merge Dual Task Data
+
+
+```{r}
+
+
+
+wm.dt <- wm.critical %>%
+  select(participant_id, trial_id, block_id, condition, version,
+         reaction_time, accuracy) %>%
+  rename(
+    wm.modality = condition,
+    wm.load = version,
+    wm.reaction_time = reaction_time,
+    wm.accuracy = accuracy
+  ) %>%
+  mutate(
+    wm.load = factor(wm.load)
+  )
+
+vipv <- merge(pv.critical %>% mutate(block_id = as.integer(block_id)), wm.dt, by=c("trial_id", "block_id", "participant_id"), all = F) %>%
+  rename (
+    pv.modality = condition,
+    pv.accuracy = accuracy,
+    pv.reaction_time = reaction_time,
+  ) %>%
+  mutate(
+    pv.modality = factor(pv.modality, levels=c("vi", "au")),
+    wm.modality = factor(wm.modality, levels=c("vi", "au")),
+    acc.dt = pv.accuracy + wm.accuracy,
+    pv.rt.log = log(pv.reaction_time),
+    pv.rt.log.c = scale(pv.rt.log),
+    wm.rt.log = log(wm.reaction_time),
+    wm.rt.log.c = scale(wm.rt.log),
+  ) %>%
+  arrange(trial_id)
+
+```
+
+```{r}
+
+vipv %>%
+  ggplot(aes(x = pv.accuracy)) + 
+  geom_histogram()
+
+```
+
+### Speed-Accuracy Tradeoff
+
+The raw relationship between RT and accuracy is negative, implying (to me) that there is no speed-accuracy trade-off(?). However, this could be due to a correlation between "easy" items (on which participants are fast and accurate) or "good" participants (who are fast and accurate).
+
+```{r}
+
+vipv %>%
+  ggplot(aes(x = pv.reaction_time, y= pv.accuracy)) + 
+  stat_summary_bin(geom="pointrange", bins=20, fun.data=mean_se) +
+  scale_x_log10() +
+  # geom_point() +
+  geom_smooth(method="lm", formula="y~x")
+
+```
+
+Participants who are faster are indeed more accurate
+
+```{r}
+
+vipv %>%
+  group_by(participant_id) %>%
+  summarize(
+    pv.reaction_time = mean(pv.reaction_time),
+    pv.accuracy = mean(pv.accuracy)
+  ) %>%
+  ggplot(aes(x = pv.reaction_time, y= pv.accuracy)) + 
+  # stat_summary_bin(geom="pointrange", bins=20) +
+  scale_x_log10() +
+  geom_point() +
+  geom_smooth(method="lm", formula="y~x") + 
+  labs(subtitle = "Grouped by participant")
+
+```
+
+And accuracy and rt of items was also negatively correlated.
+
+```{r}
+
+vipv %>%
+  group_by(item) %>%
+  summarize(
+    pv.reaction_time = mean(pv.reaction_time),
+    pv.accuracy = mean(pv.accuracy)
+  ) %>%
+  ggplot(aes(x = pv.reaction_time, y= pv.accuracy)) + 
+  # stat_summary_bin(geom="pointrange", bins=20) +
+  scale_x_log10() +
+  geom_point() +
+  geom_smooth(method="lm", formula="y~x") + 
+  labs(subtitle = "Grouped by item")
+
+```
+
+I tried to account for this by finding the by-ppt and by-item z-scores for accuracy and rt. Both continue to show a downward trend although potentially there's a slight peak on the by-ppt plot.
+
+```{r}
+
+vipv <- vipv %>%
+  group_by(item) %>%
+    mutate(
+      pv.accuracy.item.z = (pv.accuracy - mean(pv.accuracy)) / sd(pv.accuracy),
+      pv.rt.log.item.z = (pv.rt.log - mean(pv.rt.log)) / sd(pv.rt.log)
+    ) %>%
+  ungroup() %>%
+  group_by(participant_id) %>%
+    mutate(
+      pv.accuracy.ppt.z = (pv.accuracy - mean(pv.accuracy)) / sd(pv.accuracy),
+      pv.rt.log.ppt.z = (pv.rt.log - mean(pv.rt.log)) / sd(pv.rt.log)
+    ) %>%
+    ungroup() %>%
+  mutate(
+    pv.bis.ppt = pv.accuracy.ppt.z - pv.rt.log.ppt.z
+  )
+```
+
+```{r}
+
+vipv %>%
+    ggplot(aes(x = pv.rt.log.ppt.z, y= pv.accuracy.ppt.z)) + 
+    stat_summary_bin(geom="pointrange", bins=20, fun.data=mean_se) +
+    # geom_point() +
+    geom_smooth(method="lm", formula="y~x")
+
+```
+
+```{r}
+
+vipv %>%
+    ungroup() %>%
+    ggplot(aes(x = pv.rt.log.item.z, y= pv.accuracy.item.z)) + 
+    stat_summary_bin(geom="pointrange", bins=20) +
+    # geom_point() +
+    geom_smooth(method="lm", formula="y~x")
+
+```
+
+## Property Verification Effects
+
+### Reaction Time
+
+For PV RT we see the opposite cross-over interaction in the high-load condition, compared to the one observed by Vermeulen et al. Ppts are faster to respond to trials where the modality of the WM and PV trials match.
+
+```{r}
+
+vipv %>%
+  filter(wm.accuracy == 1,
+         pv.accuracy == 1) %>%
+  ggplot(aes(x=pv.modality, y = pv.rt.log, color=as.factor(wm.modality))) + 
+  stat_summary(fun="mean", geom="point",size=5, position=position_dodge(width=1)) + 
+  stat_summary(fun.data="mean_se", geom="errorbar", position=position_dodge(width=1)) + 
+  facet_grid(cols=vars(wm.load), labeller = label_both) +
+  theme(
+  ) +
+  labs(
+    x = "PV Modality",
+    y = "PV Reaction Time (log)",
+    color = "WM Modality"
+  )
+
+```
+
+The 3-way interaction has a non-sigificant, negative effect on RT's.
+
+```{r}
+
+m.vipv.pv.rt.base <- lmer(
+  pv.rt.log ~ 1 + pv.modality + wm.modality + wm.load +
+      pv.modality:wm.modality + wm.modality:wm.load + pv.modality:wm.load +
+      (1 | participant_id) + (1 | item_id),
+  data = vipv %>%
+  filter(wm.accuracy == 1,
+         pv.accuracy == 1), REML=F)
+
+m.vipv.pv.rt <- lmer(
+  pv.rt.log ~ 1 + pv.modality + wm.modality + wm.load + 
+    pv.modality:wm.modality + wm.modality:wm.load + pv.modality:wm.load + 
+    pv.modality:wm.modality:wm.load +
+              (1 | participant_id) + (1 | item_id),
+  data = vipv %>%
+  filter(wm.accuracy == 1,
+         pv.accuracy == 1), REML=F)
+
+summary(m.vipv.pv.rt)
+
+anova(m.vipv.pv.rt.base, m.vipv.pv.rt)
+
+```
+
+### Accuracy
+
+PV accuracy appears to show a 2-way interaction in the expected direction, with accuracy generally lower for same-modality trials in both the low and high-load conditions.
+
+```{r}
+
+vipv %>%
+  filter(wm.accuracy == 1) %>%
+  ggplot(aes(x=pv.modality, y = pv.accuracy)) + 
+  stat_summary(fun="mean", geom="point",size=5, position=position_dodge(width=1)) + 
+  stat_summary(fun.data="mean_se", geom="errorbar", position=position_dodge(width=1)) + 
+  facet_grid(cols=vars(wm.load), labeller = label_value) +
+  theme(
+  ) +
+  labs(
+    x = "PV Modality",
+    y = "PV Accuracy",
+    color = "WM Modality"
+  )
+
+```
+
+```{r}
+
+vipv %>%
+  filter(wm.accuracy == 1) %>%
+  ggplot(aes(x=pv.modality, y = pv.accuracy, color=as.factor(wm.modality))) + 
+  stat_summary(fun="mean", geom="point",size=5, position=position_dodge(width=1)) + 
+  stat_summary(fun.data="mean_se", geom="errorbar", position=position_dodge(width=1)) + 
+  facet_grid(cols=vars(wm.load), labeller = label_value) +
+  theme(
+  ) +
+  labs(
+    x = "PV Modality",
+    y = "PV Accuracy",
+    color = "WM Modality"
+  )
+
+```
+
+A linear model shows no 2-way interaction (or any other effects).
+
+```{r}
+
+m.vipv.pv.acc.base <- glmer(
+    pv.accuracy ~ 1 + pv.modality + wm.modality + wm.load + 
+    pv.modality:wm.modality + wm.modality:wm.load + pv.modality:wm.load +
+              (1 | participant_id) + (1 | item_id),
+  data = vipv, family="binomial", control=optimxglmerControl)
+
+m.vipv.pv.acc <- glmer(
+    pv.accuracy ~ 1 + pv.modality + wm.modality + wm.load + 
+    pv.modality:wm.modality + wm.modality:wm.load + pv.modality:wm.load +
+    pv.modality:wm.modality:wm.load +
+              (1 | participant_id) + (1 | item_id),
+    data = vipv, family="binomial", control=optimxglmerControl)
+
+summary(m.vipv.pv.acc)
+anova(m.vipv.pv.acc.base, m.vipv.pv.acc)
+
+```
+
+### Balanced Integration of Scores
+
+In an attempt to combine RT and Accuracy, I used the Balanced Integration of Scores (BIS) (Liesefeld & Janczyk, 2018), essentially ppt-wise z(acc) - z(rt).
+
+It seems to mostly be driven by RT, showing the same rough pattern of results (better performance on same-modality trials).
+
+```{r}
+
+vipv %>%
+  filter(wm.accuracy == 1) %>%
+  ggplot(aes(x=pv.modality, y = pv.bis.ppt, color=as.factor(wm.modality))) + 
+  stat_summary(fun="mean", geom="point",size=5, position=position_dodge(width=1)) + 
+  stat_summary(fun.data="mean_se", geom="errorbar", position=position_dodge(width=1)) + 
+  facet_grid(cols=vars(wm.load), labeller = label_both) +
+  theme(
+  ) +
+  labs(
+    x = "PV Modality",
+    y = "PV BIS",
+    color = "WM Modality"
+  )
+
+```
+
+No significant effects.
+
+```{r}
+
+m.vipv.pv.bis.base <- lmer(
+  pv.bis.ppt ~ 1 + pv.modality + wm.modality + wm.load +
+      pv.modality:wm.modality + wm.modality:wm.load + pv.modality:wm.load +
+      (1 | participant_id) + (1 | item_id),
+  data = vipv, REML=F)
+
+m.vipv.pv.bis <- lmer(
+  pv.bis.ppt ~ 1 + pv.modality + wm.modality + wm.load + 
+    pv.modality:wm.modality + wm.modality:wm.load + pv.modality:wm.load + 
+    pv.modality:wm.modality:wm.load +
+              (1 | participant_id) + (1 | item_id),
+  data = vipv, REML=F)
+
+summary(m.vipv.pv.bis)
+
+anova(m.vipv.pv.bis.base, m.vipv.pv.bis)
+
+```
+
+## Working Memory Effects
+
+### Reaction Time
+
+WM RTs also show what could be a crossover in the high-load condition, again with _faster_ RTs for same-modality trials.
+
+```{r}
+
+vipv %>%
+  filter(wm.accuracy == 1,
+         pv.accuracy == 1) %>%
+  ggplot(aes(x=pv.modality, y = wm.rt.log, color=as.factor(wm.modality))) + 
+  stat_summary(fun="mean", geom="point",size=5, position=position_dodge(width=1)) + 
+  stat_summary(fun.data="mean_se", geom="errorbar", position=position_dodge(width=1)) + 
+  facet_grid(cols=vars(wm.load), labeller = label_value) +
+  theme(
+  ) +
+  labs(
+    x = "PV Modality",
+    y = "WM Reaction Time (log s)",
+    color = "WM Modality"
+  )
+
+
+```
+
+The 3-way interaction has a negative effect which is not significant (p=0.16).
+
+```{r}
+
+m.vipv.wm.rt.base <- lmer(
+  wm.rt.log ~ 1 + pv.modality + wm.modality + wm.load +
+      pv.modality:wm.modality + wm.modality:wm.load + pv.modality:wm.load +
+      (1 | participant_id) + (1 | item_id),
+  data = vipv %>%
+  filter(wm.accuracy == 1,
+         pv.accuracy == 1), REML=F)
+
+m.vipv.wm.rt <- lmer(
+  wm.rt.log ~ 1 + pv.modality + wm.modality + wm.load + 
+    pv.modality:wm.modality + wm.modality:wm.load + pv.modality:wm.load + 
+    pv.modality:wm.modality:wm.load +
+              (1 | participant_id) + (1 | item_id),
+  data = vipv %>%
+  filter(wm.accuracy == 1,
+         pv.accuracy == 1), REML=F)
+
+summary(m.vipv.wm.rt)
+
+anova(m.vipv.wm.rt.base, m.vipv.wm.rt)
+
+```
+
+### Working Memory Accuracy
+
+WM Accuracy seems to show a main effect of load (which makes sense).
+
+```{r}
+
+vipv %>%
+  filter(pv.accuracy == 1) %>%
+  ggplot(aes(x=pv.modality, y = wm.accuracy, color=as.factor(wm.modality))) + 
+  stat_summary(fun="mean", geom="point",size=5, position=position_dodge(width=1)) + 
+  stat_summary(fun.data="mean_se", geom="errorbar", position=position_dodge(width=1)) + 
+  facet_grid(cols=vars(wm.load), labeller = label_value) +
+  theme(
+  ) +
+  labs(
+    x = "PV Modality",
+    y = "WM Accuracy",
+    color = "WM Modality"
+  )
+
+```
+
+The load effect, however, is nonsignificant (p=0.25)
+
+```{r}
+
+m.vipv.wm.acc.base <- glmer(
+    wm.accuracy ~ 1 + pv.modality + wm.modality + wm.load + 
+    pv.modality:wm.modality + wm.modality:wm.load + pv.modality:wm.load +
+              (1 | participant_id) + (1 | item_id),
+  data = vipv, family="binomial", control=optimxglmerControl)
+
+m.vipv.wm.acc <- glmer(
+    wm.accuracy ~ 1 + pv.modality + wm.modality + wm.load + 
+    pv.modality:wm.modality + wm.modality:wm.load + pv.modality:wm.load +
+    pv.modality:wm.modality:wm.load +
+              (1 | participant_id) + (1 | item_id),
+    data = vipv, family="binomial", control=optimxglmerControl)
+
+summary(m.vipv.wm.acc)
+anova(m.vipv.wm.acc.base, m.vipv.wm.acc)
+
+```
+

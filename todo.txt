@@ -104,9 +104,33 @@
 
 - check stimuli criticals [X]
 
-- test timing [ ]
+- test timing [X]
 
-- push [ ]
+- push [X]
+
+- run pilot [X]
+
+- pilot changes [ ]
+	- item analysis [ ]
+  	    - 47 TELEVISION thunderous -> blaring
+  	    - make changes [ ]
+
+  	- read ppt comments [X]
+  	   
+    - update SONA codes (again) [X]
+  	  
+    - debrief [X]
+  	    - did you use verbal labels for the picture? [X]
+        - db [X]
+        - check store [X]
+
+    - push [ ]
+
+    - test [ ]
+
+- turk [ ]
+
+
 
 - problems:
 	- correlation between T and F wm/pv trials

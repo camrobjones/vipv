@@ -420,6 +420,115 @@ var post_test_strategy = {
   }
 };
 
+
+var post_test_label_vis = {
+
+  // Post Test Questionnaire
+  type: jsPsychSurveyHtmlForm,
+  html: `
+  <h2 class='title'>Feedback</h3>
+
+  <div class='debrief-container'>
+    <div class='question'>
+      <h3 class='question-title debrief'>
+        Did you notice yourself using names to describe and remember the images?
+      </h3>
+    
+      <div class='option-container likert'>
+
+        <div class='radio-option likert'>
+            <label for='post_test_label_vis_1' class='radio-label likert'>Never</label>
+            <input type='radio' name='post_test_label_vis' id='post_test_label_vis_1'
+            value="1"/ required class='likert'>
+        </div>
+
+        <div class='radio-option likert'>
+            <label for='post_test_label_vis_2' class='radio-label likert'>Occasionally</label>
+            <input type='radio' name='post_test_label_vis' id='post_test_label_vis_2'
+            value="2"/ required class='likert'>
+        </div>
+
+        <div class='radio-option likert'>
+            <label for='post_test_label_vis_3' class='radio-label likert'>Sometimes</label>
+            <input type='radio' name='post_test_label_vis' id='post_test_label_vis_3'
+            value="3"/ required class='likert'>
+        </div>
+
+        <div class='radio-option likert'>
+            <label for='post_test_label_vis_4' class='radio-label likert'>Often</label>
+            <input type='radio' name='post_test_label_vis' id='post_test_label_vis_4'
+            value="4"/ required class='likert'>
+        </div>
+
+        <div class='radio-option likert'>
+            <label for='post_test_label_vis_5' class='radio-label likert'>Always</label>
+            <input type='radio' name='post_test_label_vis' id='post_test_label_vis_5'
+            value="1"/ required class='likert'>
+        </div>
+      </div>
+    </div>
+  </div>`,
+  choices: "NO_KEYS",
+  data: {trial_part: 'post_test'},
+  on_finish: function() {
+    updateProgress();
+  }
+};
+
+var post_test_label_audio = {
+
+  // Post Test Questionnaire
+  type: jsPsychSurveyHtmlForm,
+  html: `
+  <h2 class='title'>Feedback</h3>
+
+  <div class='debrief-container'>
+    <div class='question'>
+      <h3 class='question-title debrief'>
+        Did you notice yourself using names to describe and remember the sounds?
+      </h3>
+    
+      <div class='option-container likert'>
+
+        <div class='radio-option likert'>
+            <label for='post_test_label_audio_1' class='radio-label likert'>Never</label>
+            <input type='radio' name='post_test_label_audio' id='post_test_label_audio_1'
+            value="1"/ required class='likert'>
+        </div>
+
+        <div class='radio-option likert'>
+            <label for='post_test_label_audio_2' class='radio-label likert'>Occasionally</label>
+            <input type='radio' name='post_test_label_audio' id='post_test_label_audio_2'
+            value="2"/ required class='likert'>
+        </div>
+
+        <div class='radio-option likert'>
+            <label for='post_test_label_audio_3' class='radio-label likert'>Sometimes</label>
+            <input type='radio' name='post_test_label_audio' id='post_test_label_audio_3'
+            value="3"/ required class='likert'>
+        </div>
+
+        <div class='radio-option likert'>
+            <label for='post_test_label_audio_4' class='radio-label likert'>Often</label>
+            <input type='radio' name='post_test_label_audio' id='post_test_label_audio_4'
+            value="4"/ required class='likert'>
+        </div>
+
+        <div class='radio-option likert'>
+            <label for='post_test_label_audio_5' class='radio-label likert'>Always</label>
+            <input type='radio' name='post_test_label_audio' id='post_test_label_audio_5'
+            value="1"/ required class='likert'>
+        </div>
+      </div>
+    </div>
+  </div>`,
+  choices: "NO_KEYS",
+  data: {trial_part: 'post_test'},
+  on_finish: function() {
+    updateProgress();
+  }
+};
+
 var post_test_simulation = {
 
   // Post Test Questionnaire
@@ -562,9 +671,9 @@ window.onload = function() {
 
   /* ---- Debrief ---- */
 
-  timeline.push(post_test_purpose, post_test_relationship, post_test_strategy,
-                post_test_simulation, post_test_modality, post_test_other, debrief_block);
-  trialCount += 6;
+  timeline.push(post_test_purpose, post_test_relationship, post_test_strategy, post_test_label_vis,
+                post_test_label_audio, post_test_simulation, post_test_modality, post_test_other, debrief_block);
+  trialCount += 8;
 
   if (! isTouch) {
 

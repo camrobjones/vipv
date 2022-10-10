@@ -44,6 +44,8 @@ class Participant(models.Model):
     post_test_purpose = models.TextField(default="")
     post_test_relationship = models.TextField(default="")
     post_test_strategy = models.TextField(default="")
+    post_test_label_vis = models.TextField(default="")
+    post_test_label_audio = models.TextField(default="")
     post_test_simulation = models.TextField(default="")
     post_test_modality = models.TextField(default="")
     post_test_other = models.TextField(default="")

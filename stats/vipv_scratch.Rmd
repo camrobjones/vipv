@@ -1,0 +1,233 @@
+## Checks
+
+```{r}
+
+source("utils.R")
+library(tidyverse)
+
+ppts.raw <- read.csv("data/vipv_participant.csv")
+binary <- read.csv("data/vipv_binary.csv")
+
+# Preprocess participants
+ppts.all <- preprocess.ppts(
+  ppts.raw, "pilot")
+
+
+pv.all <- binary %>%
+  filter(participant_id %in% ppts.all$id,
+         task == "PV") %>%
+  mutate(accuracy = ifelse(is_correct == "True", 1, 0))
+
+pv.critical.all <- pv.all %>% filter(item_type == "critical")
+
+wm.all <- binary %>%
+  filter(participant_id %in% ppts.all$id,
+         task == "WM") %>%
+  mutate(accuracy = ifelse(is_correct == "True", 1, 0))
+
+wm.critical.all <- wm.all %>% filter(item_type == "critical")
+
+wm.dt <- wm.critical.all %>%
+  select(participant_id, trial_id, block_id, condition, version,
+         reaction_time, accuracy) %>%
+  rename(
+    wm.modality = condition,
+    wm.load = version,
+    wm.reaction_time = reaction_time,
+    wm.accuracy = accuracy
+  )
+
+vipv <- merge(pv.critical.all %>% mutate(block_id = as.integer(block_id)), wm.dt, by=c("trial_id", "block_id", "participant_id"), all = F) %>%
+  rename (
+    pv.modality = condition,
+    pv.accuracy = accuracy,
+    pv.reaction_time = reaction_time,
+  ) %>%
+  mutate(
+    pv.modality = factor(pv.modality, levels=c("vi", "au")),
+    wm.modality = factor(wm.modality, levels=c("vi", "au")),
+    acc.dt = pv.accuracy + wm.accuracy,
+    pv.rt.log = log(pv.reaction_time),
+    pv.rt.log.c = scale(pv.rt.log),
+    wm.rt.log = log(wm.reaction_time),
+    wm.rt.log.c = scale(wm.rt.log),
+  ) %>%
+  arrange(trial_id)
+
+
+```
+
+```{r}
+
+binary %>%
+  filter(participant_id == "17", item_type=="critical",
+         trial_id == "1_7"
+         ) 
+
+```
+
+```{r}
+
+vipv %>% filter(participant_id == 17, trial_id=="1_7")
+
+```
+
+```{r}
+# CF list 1 csv
+
+vipv %>% filter(participant_id == 17, item_type=="critical") %>%
+  select(item, pv.modality, wm.modality, wm.load)
+
+```
+
+# 2-way interactions
+
+```{r}
+
+m.vipv.pv.acc.2.base <- glmer(
+    pv.accuracy ~ 1 + pv.modality + wm.modality + wm.load + 
+              (1 | participant_id) + (1 | item_id),
+  data = vipv, family="binomial", control=optimxglmerControl)
+
+m.vipv.pv.acc.2 <- glmer(
+  pv.accuracy ~ 1 + pv.modality + wm.modality + wm.load + 
+    pv.modality:wm.modality +
+    (1 | participant_id) + (1 | item_id),
+  data = vipv, family="binomial", control=optimxglmerControl)
+
+summary(m.vipv.pv.acc.2)
+anova(m.vipv.pv.acc.2.base, m.vipv.pv.acc.2)
+
+```
+
+
+# Property Verification
+
+## Item sampling
+
+Items appear to be sampled in a balanced way.
+
+```{r}
+
+pv.critical %>%
+  ggplot(aes(x = reorder(item_id, accuracy), fill=condition)) + 
+  geom_histogram(stat="count") + 
+  theme_minimal() + 
+  theme(
+    axis.text.x = element_blank()
+  )
+
+```
+
+# Working Memory
+
+## Item sampling
+
+Items appear to be sampled in a balanced way.
+
+```{r}
+
+wm.critical %>%
+  ggplot(aes(x = item_id, fill=condition)) + 
+  geom_histogram(stat="count") + 
+  theme_minimal() + 
+  theme(
+    axis.text.x = element_blank()
+  )
+
+```
+
+## Accuracy
+
+Retained participants performed better on social vs visual domain items.
+
+```{r}
+
+wm.critical %>%
+  ggplot(aes(x = condition, y = accuracy)) + 
+  facet_grid(rows=vars(version)) +
+  stat_summary(fun.data = "mean_cl_boot", geom="errorbar", width=0.2) +
+  stat_summary(fun = "mean", geom="point", size=3) + 
+  theme_minimal()
+  
+
+```
+
+
+```{r}
+
+m.wm.condition <- lmer(
+  accuracy ~ 1 + condition + (1 + condition | participant_id) + (1 | item_id),
+  data = wm.critical
+)
+
+summary(m.wm.condition)
+
+```
+
+```{r}
+
+m.wm.version <- lmer(
+  accuracy ~ 1 + version + (1 + version | participant_id) + (1 | item_id),
+  data = wm.critical
+)
+
+summary(m.wm.version)
+
+```
+
+
+# IRQ
+
+#### IRQ
+
+```{r}
+
+irq.attention.answers <- data.frame(
+  item_id = c(37, 38, 39),
+  correct_response = c(1,5,1))
+
+irq.all <- irq.all %>%
+  mutate(item_type = recode(item_type, catch = "attention"))
+
+ppts.all <- exclude.ppts.attention(ppts.all, irq.all, irq.attention.answers, "irq", cutoff.irq.attention)
+
+```
+
+`r round(nrow(ppts.all %>% filter(irq.attention.accuracy>0.66)) / nrow(ppts.all), 2) * 100`% of ppts got > 66% IRQ attention checks correct.
+
+```{r}
+
+ppts.all %>%
+  ggplot(aes(x = irq.attention.accuracy)) + 
+  geom_histogram() + 
+  theme_minimal() + 
+  labs(
+    x = "IRQ Attention Accuracy",
+    y = "No. Participants"
+  )
+
+```
+
+Participants who failed IRQ attention check.
+
+```{r}
+
+ppts.all %>%
+  filter(irq.attention.accuracy < 0.66) %>%
+  select(participant_id, irq.attention.accuracy)
+
+```
+
+IRQ Accuracy by question
+
+```{r}
+
+irq.all %>%
+  filter(item_type == "attention") %>%
+  merge(irq.attention.answers) %>%
+  mutate(accuracy = ifelse(response == correct_response, 1, 0)) %>%
+  group_by(item_id) %>%
+  summarize(accuracy = mean(accuracy), .groups="drop")
+
+```

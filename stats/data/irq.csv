@@ -1,0 +1,40 @@
+item_id,item_type,sentence,Visual,Verbal,Orthographic,Manipulation
+1,critical,I often enjoy the use of mental pictures to reminisce,0.785,0.060,0.101,0.086
+2,critical,I can close my eyes and easily picture a scene that I have experienced,0.753,0.026,0.139,0.096
+3,critical,My mental images are very vivid and photographic,0.740,0.178,0.230,0.018
+4,critical,The old saying “A picture is worth a thousand words” is certainly true for me,0.685,0.095,0.066,0.206
+5,critical,"When I think about someone I know well, I instantly see their face in my mind",0.680,0.023,0.120,0.063
+6,critical,I often use mental images or pictures to help me remember things,0.665,0.097,0.140,0.074
+7,critical,My memories are mainly visual in nature,0.638,0.046,0.001,0.004
+8,critical,When traveling to get to somewhere I tend to think more visually than verbally,0.612,0.153,0.010,0.001
+9,critical,If I talk to myself in my head it is usually accompanied by visual imagery,0.542,0.077,0.332,0.166
+10,critical,If I imagine my memories visually they are more often static than moving,0.418,0.043,0.137,0.220
+11,critical,I think about problems in my mind in the form of a conversation with myself,0.141,0.776,0.105,0.014
+12,critical,"If I am walking somewhere by myself, I often have a silent conversation with myself",0.145,0.719,0.068,0.095
+13,critical,"If I am walking somewhere by myself, I frequently think of conversations that I’ve recently had",0.141,0.699,0.132,0.035
+14,critical,My inner speech helps my imagination,0.156,0.653,0.078,0.103
+15,critical,I tend to think things through verbally when I am relaxing,0.024,0.650,0.132,0.121
+16,critical,"When thinking about a social problem, I often talk it through in my head",0.135,0.595,0.005,0.043
+17,critical,I like to give myself some down time to talk through thoughts in my mind,0.298,0.583,0.036,0.342
+18,critical,"I hear words in my ""mind’s ear"" when I think",0.185,0.559,0.032,0.321
+19,critical,I rarely vocalize thoughts in my mind,0.064,0.493,0.307,0.025
+20,critical,I often talk to myself internally while watching TV,0.062,0.486,0.325,0.103
+21,critical,My memories often involve conversations I’ve had,0.087,0.486,0.144,0.046
+22,critical,"When I read, I tend to hear a voice in my ""mind’s ear""",0.050,0.467,0.001,0.180
+23,critical,"When I hear someone talking, I see words written down in my mind",0.128,0.049,0.789,0.080
+24,critical,"I see words in my ""mind’s eye"" when I think",0.163,0.081,0.696,0.089
+25,critical,"When I am introduced to someone for the first time, I imagine what their name would look like when written down",0.192,0.054,0.691,0.092
+26,critical,A strategy I use to help me remember written material is imagining what the writing looks like,0.071,0.057,0.618,0.039
+27,critical,I hear a running summary of everything I am doing in my head,0.156,0.326,0.616,0.012
+28,critical,I rehearse in my mind how someone might respond to a text message before I send it,0.038,0.363,0.400,0.132
+29,critical,I can easily imagine and mentally rotate three-dimensional geometric figures,0.107,0.226,0.064,0.670
+30,critical,I can easily choose to imagine this sentence in my mind pronounced unnaturally slowly,0.030,0.215,0.146,0.597
+31,critical,"In school, I had no problems with geometry",0.252,0.136,0.216,0.594
+32,critical,It is easy for me to imagine the sensation of licking a brick,0.160,0.185,0.103,0.530
+33,critical,I find it difficult to imagine how a three-dimensional geometric figure would exactly look like when rotated,0.158,0.302,0.014,0.526
+34,critical,"I can easily imagine someone clearly talking, and then imagine the same voice with a heavy cold",0.080,0.051,0.183,0.502
+35,critical,I think I have a large vocabulary in my native language compared to others,0.143,0.181,0.145,0.476
+36,critical,I can easily imagine the sound of a trumpet getting louder,0.096,0.209,0.031,0.474
+37,catch,The word ‘hotel’ has three letters,0,0,0,0
+38,catch,Elephants are larger than dogs,0,0,0,0
+39,catch,Most people have five legs,0,0,0,0
