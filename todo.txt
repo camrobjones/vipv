@@ -126,7 +126,7 @@
 
     - push [X]
 
-    - test [ ]
+    - test [X]
 
 - turk [ ]
 

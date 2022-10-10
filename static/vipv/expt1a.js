@@ -463,7 +463,7 @@ var post_test_label_vis = {
         <div class='radio-option likert'>
             <label for='post_test_label_vis_5' class='radio-label likert'>Always</label>
             <input type='radio' name='post_test_label_vis' id='post_test_label_vis_5'
-            value="1"/ required class='likert'>
+            value="5"/ required class='likert'>
         </div>
       </div>
     </div>
@@ -517,7 +517,7 @@ var post_test_label_audio = {
         <div class='radio-option likert'>
             <label for='post_test_label_audio_5' class='radio-label likert'>Always</label>
             <input type='radio' name='post_test_label_audio' id='post_test_label_audio_5'
-            value="1"/ required class='likert'>
+            value="5"/ required class='likert'>
         </div>
       </div>
     </div>
