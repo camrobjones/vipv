@@ -110,10 +110,10 @@
 
 - run pilot [X]
 
-- pilot changes [ ]
-	- item analysis [ ]
+- pilot changes [X]
+	- item analysis [X]
   	    - 47 TELEVISION thunderous -> blaring
-  	    - make changes [ ]
+  	    - make changes [X]
 
   	- read ppt comments [X]
   	   
@@ -124,7 +124,7 @@
         - db [X]
         - check store [X]
 
-    - push [ ]
+    - push [X]
 
     - test [ ]
 
