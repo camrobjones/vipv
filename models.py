@@ -11,6 +11,7 @@ class Participant(models.Model):
     key = models.TextField()  # Generated passphrase to credit ppt
     SONA_code = models.TextField(default="")  # SONA participant code
     mturk = models.BooleanField(default=False)  # Is ppt an mturk ppt?
+    worker_id = models.TextField(default="")  # Mturk worker id
     get_args = models.TextField(default="")  # Get args issued with request
     notes = models.TextField(default="")  # Miscellaneous notes
     study = models.TextField(default="test")  # Pilot, Control, full study

@@ -129,6 +129,25 @@
     - test [X]
 
 - turk [ ]
+	- update AWS keys [X]
+	- collect mturk arg [X]
+	- display mturk key input if mturk arg [X]
+	- store mturk key [X]
+	- create block [X]
+	- test [X]
+		- with code [X]
+		- without code [X]
+		- storage [X]
+
+	- push [ ]
+		- migrate [ ]
+
+	- test [ ]
+
+	- setup AWS HIT [ ]
+		- warn about block [ ]
+
+	- email Ben [ ]
 
 
 

@@ -6,27 +6,37 @@ Todo
   	  - PV & WM accuracy [X]
   	  - move IRQ code to only limit IRQ analysis [X]
   	  
-  	  - SAT graphs grouped by condition [ ]
-  	  - Look into multi-task modality switch effects [ ] 
-  	  - filter on accuracy in models [ ]
-  	  - read BIS more carefully & implement correctly [ ]
-  	 
-  	  
   	- Check for speed/accuracy tradeoff [X]
   	  - z-score rt/acc by item [X]
   	  - Balanced Integration Score? [X]
   	- linear models [X]
   	
-  	- email Ben [ ]
-  	  
-  - Check code carefully for errors [X]
+  	- email Ben [X]
+  	
+  	- Check code carefully for errors [X]
     - match up trials etc [X]
+    - by-item analyses [X]
+    - check ppt comments [X]
+  	
+  	- SAT graphs grouped by condition [X]
+	  - filter on accuracy in models [X]
+	  
+	  - IRQ [X]
+	    - verbalizers bigger main effect of auditory [X]
+	  
+	  - distributional analysis [ ]
+	    - GPT-3 [ ]
+	  
+    - main effects [ ]
 
-  - check ppt comments [ ]
-  - Do other analyses [ ]
-    - single effects [ ]
-    - by-item analyses [ ]
     - zero trial analysis [ ]
+    
+    - trial index [ ]
+    
+	  - Look into multi-task modality switch effects [ ] 
+	  - read BIS more carefully & implement correctly [ ]
+  
+
   - Pre-reg [ ]
 
 Pre-reg
@@ -42,17 +52,53 @@ Pre-reg
 - 
 
 - Questions
-  - Where to cutoff PV RTs? 
+  - Where to cutoff PV RTs? [X]
+    - A: keep original bounds
   
-	- What is the IRQ hypothesis?
-		- In the proposal I put that visualizers will show a larger interaction effect. But I'm not sure that's the case. I would need to think much more deeply about what effects you would expect
-			- How are ppts representing the WM info differently?
-			- How are they resolving the PV stims differently?
-			- How will this lead to different interference effects?
+	- What is the IRQ hypothesis? [X]
+		- A: Exploratory, could go multiple ways
+		
+  - How to pre-register effect structure?
+	 - start with maximal and remove ranefs until convergence based on some criteron?
+	   - I have a function that does this from the affordances work
+	   - which effects to remove first? 3-way seems most relevant but 
+	   effectively contains all of the others
+	 - parsimonious (only include ranefs that significantly improve full fixef model)?
+	 - This is lots of code, I remember trying to write a function that does this and
+	   abandoning it...
+	
+	- How to correct for m.c.? [ ]
+	  - FDR on Chi2 tests for 3-way interaction
+	
+  - Other basic analyses
+	  - Should I check for or pre-register any main effects?
+	    - fixef structure used? no 3-way interaction?
+	    - add to analysis
+	    - mention in exploratory as alternative outcome of experiment
+	  - Zero-load analysis?
+	   - also add to analysis & mention in exploratory
+	  - Is it worth trying to replicate the ANOVA analysis?
+		
+	- IRQ analyses [ ]
+	 - Which LME model? Try all 4? (PV acc/rt, WM acc/rt)
+	 - Only use those for which we get an effect?
+	 - getting ixn ranef requires full ranef structure, might have convergence issues
+	 - also look at main effects?
+	
+	- How to do distributional analysis?
+	  - prob of property as covariate
+	  - random effects of wm.modality:wm.load by item?
+	  
+	 
+	   
+
 
 
 - Improved analyses
   - Preprocessing
     - PV Accuracy: D' or check if ppt results are significantly > mean.
 
-x
+  - IRQ
+    - come up with a way to validate by-ppt diffs [ ]
+      - e.g. diff in acc in high load between au & pv (pv) - diff between au & pv (au).
+      - larger diff of diffs should correlate with large 3-way ixn?

@@ -20,22 +20,13 @@ function saveResults() {
     .then(response => {
       let debrief = document.getElementById("debrief");
 
-      let html = "";
-
-      if (response.data.success) {
-
-        html += `<p class='instructions'>
+      let html = `<p class='instructions'>
           Thank you for completing the experiment.
         </p>`;
 
-        if (response.data.credit == "Granted") {
+      if (response.data.mturkCode) {
 
-          html +=  "<p>Your SONA credit has been automatically granted.</p>"
-
-        }
-
-        if (response.data.mturkCode) {
-
+          // Mturk
           html += `
 
           <p class='instructions'>
@@ -56,34 +47,44 @@ function saveResults() {
               Code copied to clipboard!
             </div>
 
-          </div>`;
+          </div>
 
-        }
-
-        html += `
           <p class='instructions'>
-            You can now close this window. Thanks again!
+            You can then close this window. Thanks again!
+          </p>
+          `;
+
+        } else if (response.data.success) {
+
+          // SONA credit granted
+          if (response.data.credit == "Granted") {
+
+            html +=  "<p>Your SONA credit has been automatically granted.</p>"
+
+          }
+
+          // General success
+          html += `<p class='instructions'>
+            You can then close this window. Thanks again!
+          </p>`
+
+        } else {
+          // SONA failure
+          html += `
+
+          <p class='instructions'>
+            Sorry, something went wrong and we were unable to grant your SONA credit
+            automatically. Please send an email to c8jones@ucsd.edu, including
+            your participant ID (${conf.ppt_id}).
+          </p>
+
+          <p class='instructions'>
+            You can then close this window. Thanks again!
           </p>`;
+      };
 
-        debrief.innerHTML = html;
+    debrief.innerHTML = html;
 
-      } else {
-
-        debrief.innerHTML = `
-        <p class='instructions'>
-          Thank you for completing the experiment. 
-        </p>
-
-        <p class='instructions'>
-          Sorry, something went wrong and we were unable to grant your SONA credit
-          automatically. Please send an email to c8jones@ucsd.edu, including
-          your participant ID (${conf.ppt_id}).
-        </p>
-
-        <p class='instructions'>
-          You can then close this window. Thanks again!
-        </p>`;
-      }
     }).catch(error => {
 
         let debrief = document.getElementById("debrief");
@@ -94,7 +95,7 @@ function saveResults() {
         </p>
 
         <p class='instructions'>
-          Sorry, something went wrong and we were unable to grant your SONA credit
+          Sorry, something went wrong and we were unable to grant your credit
           automatically. Please send an email to c8jones@ucsd.edu, including
           your participant ID (${conf.ppt_id}).
         </p>
@@ -607,6 +608,32 @@ var post_test_other = {
   }
 };
 
+
+var get_worker_id = {
+
+  // Post Test Questionnaire
+  type: jsPsychSurveyHtmlForm,
+  html: `
+  <h2 class='title'>Worker Id</h3>
+  
+  <div class='debrief-container'>
+    <div class='question'>
+      <h3 class='question-title debrief'>
+        Please enter your Mechanical Turk Worker Id in the box below.
+      </h3>
+    
+      <input type="text" class="form-control debrief" id="worker_id"
+      name="worker_id"></input>
+    </div>
+  </div>`,
+  choices: "NO_KEYS",
+  data: {trial_part: 'post_test'},
+  on_finish: function() {
+    updateProgress();
+  }
+};
+
+
 var debrief_block = {
   type: jsPsychHtmlKeyboardResponse,
   choices: "NO_KEYS",
@@ -672,8 +699,16 @@ window.onload = function() {
   /* ---- Debrief ---- */
 
   timeline.push(post_test_purpose, post_test_relationship, post_test_strategy, post_test_label_vis,
-                post_test_label_audio, post_test_simulation, post_test_modality, post_test_other, debrief_block);
+                post_test_label_audio, post_test_simulation, post_test_modality, post_test_other);
   trialCount += 8;
+
+  if (conf.mturk) {
+    timeline.push(get_worker_id);
+    trialCount += 1;
+  }
+
+  timeline.push(debrief_block);
+  
 
   if (! isTouch) {
 

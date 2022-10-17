@@ -73,6 +73,7 @@ ppts.raw <- read.csv("data/vipv_participant.csv")
 rating <- read.csv("data/vipv_rating.csv")
 binary <- read.csv("data/vipv_binary.csv")
 irq.og <- read.csv("data/irq.csv")
+stimuli <- read.csv("data/stimuli.csv")
 
 ```
 
@@ -379,15 +380,21 @@ pv.critical %>%
 
 ```
 
+N.B. the stimuli now show the updated values
+
 ```{r}
 
+# TODO: merge w/ stimuli data
+
 pv.critical %>%
-  group_by(item) %>%
+  merge(stimuli %>% select(item_id, concept, property)) %>%
+  group_by(item, concept, property) %>%
   summarize(
     reaction_time = mean(reaction_time),
     accuracy = mean(accuracy)
   ) %>%
-  arrange(accuracy)
+  arrange(accuracy) %>%
+  head(10)
 
 ```
 
@@ -435,13 +442,6 @@ vipv <- merge(pv.critical %>% mutate(block_id = as.integer(block_id)), wm.dt, by
 
 ```
 
-```{r}
-
-vipv %>%
-  ggplot(aes(x = pv.accuracy)) + 
-  geom_histogram()
-
-```
 
 ### Speed-Accuracy Tradeoff
 
@@ -455,6 +455,20 @@ vipv %>%
   scale_x_log10() +
   # geom_point() +
   geom_smooth(method="lm", formula="y~x")
+
+```
+
+We see the same trend within each condition combination
+
+```{r}
+
+vipv %>%
+  ggplot(aes(x = pv.reaction_time, y= pv.accuracy, color=wm.load)) + 
+  facet_grid(cols=vars(pv.modality), rows=vars(wm.modality), labeller="label_both") +
+  stat_summary_bin(geom="pointrange", bins=20, fun.data=mean_se) +
+  scale_x_log10() +
+  geom_smooth(method="lm", formula="y~x") +
+  theme_minimal()
 
 ```
 
@@ -569,17 +583,15 @@ The 3-way interaction has a non-sigificant, negative effect on RT's.
 ```{r}
 
 m.vipv.pv.rt.base <- lmer(
-  pv.rt.log ~ 1 + pv.modality + wm.modality + wm.load +
-      pv.modality:wm.modality + wm.modality:wm.load + pv.modality:wm.load +
+  pv.rt.log ~  pv.modality * wm.modality + 
+    pv.modality * wm.load + wm.modality * wm.load +
       (1 | participant_id) + (1 | item_id),
   data = vipv %>%
   filter(wm.accuracy == 1,
          pv.accuracy == 1), REML=F)
 
 m.vipv.pv.rt <- lmer(
-  pv.rt.log ~ 1 + pv.modality + wm.modality + wm.load + 
-    pv.modality:wm.modality + wm.modality:wm.load + pv.modality:wm.load + 
-    pv.modality:wm.modality:wm.load +
+  pv.rt.log ~ pv.modality * wm.modality * wm.load +
               (1 | participant_id) + (1 | item_id),
   data = vipv %>%
   filter(wm.accuracy == 1,
@@ -587,31 +599,13 @@ m.vipv.pv.rt <- lmer(
 
 summary(m.vipv.pv.rt)
 
-anova(m.vipv.pv.rt.base, m.vipv.pv.rt)
-
+a.vipv.pv.rt <-  anova(m.vipv.pv.rt.base, m.vipv.pv.rt)
+a.vipv.pv.rt
 ```
 
 ### Accuracy
 
 PV accuracy appears to show a 2-way interaction in the expected direction, with accuracy generally lower for same-modality trials in both the low and high-load conditions.
-
-```{r}
-
-vipv %>%
-  filter(wm.accuracy == 1) %>%
-  ggplot(aes(x=pv.modality, y = pv.accuracy)) + 
-  stat_summary(fun="mean", geom="point",size=5, position=position_dodge(width=1)) + 
-  stat_summary(fun.data="mean_se", geom="errorbar", position=position_dodge(width=1)) + 
-  facet_grid(cols=vars(wm.load), labeller = label_value) +
-  theme(
-  ) +
-  labs(
-    x = "PV Modality",
-    y = "PV Accuracy",
-    color = "WM Modality"
-  )
-
-```
 
 ```{r}
 
@@ -639,18 +633,23 @@ m.vipv.pv.acc.base <- glmer(
     pv.accuracy ~ 1 + pv.modality + wm.modality + wm.load + 
     pv.modality:wm.modality + wm.modality:wm.load + pv.modality:wm.load +
               (1 | participant_id) + (1 | item_id),
-  data = vipv, family="binomial", control=optimxglmerControl)
+  data = vipv %>%
+    filter(wm.accuracy == 1),
+  family="binomial", control=optimxglmerControl)
 
 m.vipv.pv.acc <- glmer(
     pv.accuracy ~ 1 + pv.modality + wm.modality + wm.load + 
     pv.modality:wm.modality + wm.modality:wm.load + pv.modality:wm.load +
     pv.modality:wm.modality:wm.load +
               (1 | participant_id) + (1 | item_id),
-    data = vipv, family="binomial", control=optimxglmerControl)
+    data = vipv %>%
+      filter(wm.accuracy == 1),
+    family="binomial", control=optimxglmerControl)
 
 summary(m.vipv.pv.acc)
-anova(m.vipv.pv.acc.base, m.vipv.pv.acc)
 
+a.vipv.pv.acc <- anova(m.vipv.pv.acc.base, m.vipv.pv.acc)
+a.vipv.pv.acc
 ```
 
 ### Balanced Integration of Scores
@@ -685,19 +684,21 @@ m.vipv.pv.bis.base <- lmer(
   pv.bis.ppt ~ 1 + pv.modality + wm.modality + wm.load +
       pv.modality:wm.modality + wm.modality:wm.load + pv.modality:wm.load +
       (1 | participant_id) + (1 | item_id),
-  data = vipv, REML=F)
+  data = vipv %>%
+    filter(wm.accuracy == 1), REML=F)
 
 m.vipv.pv.bis <- lmer(
   pv.bis.ppt ~ 1 + pv.modality + wm.modality + wm.load + 
     pv.modality:wm.modality + wm.modality:wm.load + pv.modality:wm.load + 
     pv.modality:wm.modality:wm.load +
               (1 | participant_id) + (1 | item_id),
-  data = vipv, REML=F)
+  data = vipv %>%
+    filter(wm.accuracy == 1), REML=F)
 
 summary(m.vipv.pv.bis)
 
-anova(m.vipv.pv.bis.base, m.vipv.pv.bis)
-
+a.vipv.pv.bis <- anova(m.vipv.pv.bis.base, m.vipv.pv.bis)
+a.vipv.pv.bis
 ```
 
 ## Working Memory Effects
@@ -726,12 +727,12 @@ vipv %>%
 
 ```
 
-The 3-way interaction has a negative effect which is not significant (p=0.16).
+The 3-way interaction has a negative effect which is not significant (p=0.23).
 
 ```{r}
 
 m.vipv.wm.rt.base <- lmer(
-  wm.rt.log ~ 1 + pv.modality + wm.modality + wm.load +
+  wm.rt.log.c ~ 1 + pv.modality + wm.modality + wm.load +
       pv.modality:wm.modality + wm.modality:wm.load + pv.modality:wm.load +
       (1 | participant_id) + (1 | item_id),
   data = vipv %>%
@@ -739,7 +740,7 @@ m.vipv.wm.rt.base <- lmer(
          pv.accuracy == 1), REML=F)
 
 m.vipv.wm.rt <- lmer(
-  wm.rt.log ~ 1 + pv.modality + wm.modality + wm.load + 
+  wm.rt.log.c ~ 1 + pv.modality + wm.modality + wm.load + 
     pv.modality:wm.modality + wm.modality:wm.load + pv.modality:wm.load + 
     pv.modality:wm.modality:wm.load +
               (1 | participant_id) + (1 | item_id),
@@ -749,8 +750,8 @@ m.vipv.wm.rt <- lmer(
 
 summary(m.vipv.wm.rt)
 
-anova(m.vipv.wm.rt.base, m.vipv.wm.rt)
-
+a.vipv.wm.rt <- anova(m.vipv.wm.rt.base, m.vipv.wm.rt)
+a.vipv.wm.rt
 ```
 
 ### Working Memory Accuracy
@@ -775,7 +776,7 @@ vipv %>%
 
 ```
 
-The load effect, however, is nonsignificant (p=0.25)
+The load effect, however, is nonsignificant (p=0.36)
 
 ```{r}
 
@@ -783,17 +784,748 @@ m.vipv.wm.acc.base <- glmer(
     wm.accuracy ~ 1 + pv.modality + wm.modality + wm.load + 
     pv.modality:wm.modality + wm.modality:wm.load + pv.modality:wm.load +
               (1 | participant_id) + (1 | item_id),
-  data = vipv, family="binomial", control=optimxglmerControl)
+  data = vipv %>%
+    filter(pv.accuracy == 1),
+  family="binomial", control=optimxglmerControl)
 
 m.vipv.wm.acc <- glmer(
     wm.accuracy ~ 1 + pv.modality + wm.modality + wm.load + 
     pv.modality:wm.modality + wm.modality:wm.load + pv.modality:wm.load +
     pv.modality:wm.modality:wm.load +
               (1 | participant_id) + (1 | item_id),
-    data = vipv, family="binomial", control=optimxglmerControl)
+    data = vipv %>%
+    filter(pv.accuracy == 1),
+  family="binomial", control=optimxglmerControl)
 
 summary(m.vipv.wm.acc)
-anova(m.vipv.wm.acc.base, m.vipv.wm.acc)
+a.vipv.wm.acc <- anova(m.vipv.wm.acc.base, m.vipv.wm.acc)
+a.vipv.wm.acc
+```
+
+## Adjust for multiple comparisons
+
+```{r}
+
+p.val <- c(a.vipv.pv.rt$`Pr(>Chisq)`[2],
+            a.vipv.pv.acc$`Pr(>Chisq)`[2],
+            a.vipv.wm.rt$`Pr(>Chisq)`[2],
+            a.vipv.wm.acc$`Pr(>Chisq)`[2])
+
+test <- c("PV RT", "PV Acc", "WM RT", "WM Acc")
+p.val.adj <- stats::p.adjust(p.val, method="BH")
+
+data.frame(test, p.val, p.val.adj)
 
 ```
 
+# Distributional Analysis
+
+```{r}
+
+# Join spls onto vipv
+vipv <- vipv %>%
+  merge(stimuli %>% select(item_id, spl_gpt3.text.davinci.002_title)) %>%
+  rename(spl_gpt3 = spl_gpt3.text.davinci.002_title)
+
+```
+
+
+PV RT increases w/ GPT-3 surprisal
+
+```{r}
+
+vipv %>%
+  group_by(item, spl_gpt3) %>%
+  summarize(
+    pv.rt = mean(pv.rt.log),
+    se = sd(pv.rt.log) / sqrt(n()),
+    ymax = pv.rt + se,
+    ymin = pv.rt - se,
+    .groups="drop"
+  ) %>%
+  ggplot(aes(x = spl_gpt3, y = pv.rt, ymin=ymin, ymax=ymax)) + 
+  geom_pointrange() + 
+  geom_smooth(method="lm", formula="y~x")
+
+```
+
+And accuracy decreases
+
+```{r}
+
+vipv %>%
+  group_by(item, spl_gpt3) %>%
+  summarize(
+    pv.acc = mean(pv.accuracy),
+    se = sd(pv.accuracy) / sqrt(n()),
+    ymax = pv.acc + se,
+    ymin = pv.acc - se,
+    .groups="drop"
+  ) %>%
+  ggplot(aes(x = spl_gpt3, y = pv.acc, ymin=ymin, ymax=ymax)) + 
+  geom_pointrange() + 
+  geom_smooth(method="lm", formula="y~x")
+
+
+```
+
+## WM Modality x WM Load
+
+### Item random slopes
+
+```{r}
+
+m.vipv.pv.acc.wmm.wml <- glmer(
+    pv.accuracy ~ 1 + pv.modality + wm.modality + wm.load + 
+      pv.modality:wm.modality + wm.modality:wm.load + pv.modality:wm.load +
+      pv.modality:wm.modality:wm.load +
+      (1 | participant_id) + 
+      (wm.modality + wm.load + wm.modality:wm.load | item_id),
+    data = vipv %>% filter(wm.accuracy == 1),
+    family="binomial", control=optimxglmerControl)
+
+summary(m.vipv.pv.acc.wmm.wml)
+
+```
+
+
+We take the random slope for the domainVisual effect for each participant in a linear model.
+
+```{r}
+
+item.ranef = ranef(m.vipv.pv.acc.wmm.wml)$item_id
+
+item.ranef <- item.ranef %>%
+  mutate(item_id = rownames(item.ranef))
+
+item.ranef$ixn.full = item.ranef$`wm.modalityau:wm.load3` + fixef(m.vipv.pv.acc.wmm.wml)["wm.modalityau:wm.load3"]
+
+```
+
+There is a some variance in the effect by participant, with participants varying from `r min(ppt.ranef$ixn.full)` to `r max(ppt.ranef$ixn.full)`.
+
+```{r}
+
+item.ranef %>%
+  ggplot(aes(x = reorder(item_id, -ixn.full), y = ixn.full)) +
+  geom_hline(yintercept=fixef(m.vipv.pv.acc.wmm.wml)["wm.modalityau:wm.load3"], color="red", linetype="dashed") +
+  geom_point() + 
+  theme_minimal() + 
+  theme(
+    axis.text.x = element_blank()
+  ) + 
+  labs(
+    subtitle = "Item Random Slopes for 2-way Interaction Effect",
+    title = "PV Accuracy Random Slopes",
+    y = "2-way Interaction Effect (Fixed Effect + Random Slope)",
+    x = "Participant Id",
+    caption = "Red dashed line represents fixed effect"
+  )
+
+```
+
+```{r}
+
+items <- merge(stimuli, item.ranef, by="item_id", all.y=F) %>%
+  rename(spl_gpt3 = spl_gpt3.text.davinci.002_title)
+
+```
+
+
+### Correlation of Surprisal and Random Slopes
+
+#### WM Load
+
+(sense check), there is a positive relationship between GPT-3 surprisal and the influence of WM load (less predictable items show a larger impact of load).
+
+```{r}
+
+items %>%
+  ggplot(aes(x = spl_gpt3, y = wm.load3)) +
+  geom_point() +
+  geom_smooth(method="lm", formula="y~x") + 
+  # facet_wrap(facets=vars(factor)) + 
+  theme_minimal() +
+  labs(
+    # title="IRQ vs PR Domain ∆",
+    # subtitle = "By-Participant",
+    # x = "IRQ Dimension Score",
+    # y = "PR Accuracy Domain ∆ (Visual - Social)"
+    )
+
+```
+
+#### WM Modality
+
+Items show a positive 
+
+```{r}
+
+items %>%
+  ggplot(aes(x = spl_gpt3, y = wm.modalityau)) +
+  geom_point() +
+  geom_smooth(method="lm", formula="y~x") + 
+  facet_wrap(facets=vars(code1_pv_modality)) +
+  theme_minimal() +
+  labs(
+    # title="IRQ vs PR Domain ∆",
+    # subtitle = "By-Participant",
+    # x = "IRQ Dimension Score",
+    # y = "PR Accuracy Domain ∆ (Visual - Social)"
+    )
+
+```
+
+
+#### 2-way interaction
+
+```{r}
+
+items %>%
+  ggplot(aes(x = spl_gpt3, y = `wm.modalityau:wm.load3`)) +
+  geom_point() +
+  geom_smooth(method="lm", formula="y~x") + 
+  facet_wrap(facets=vars(code1_pv_modality)) +
+  theme_minimal() +
+  labs(
+    # title="IRQ vs PR Domain ∆",
+    # subtitle = "By-Participant",
+    # x = "IRQ Dimension Score",
+    # y = "PR Accuracy Domain ∆ (Visual - Social)"
+    )
+
+```
+
+
+
+## Same vs different modality
+
+### Get ppt slopes
+
+```{r}
+
+m.vipv.pv.acc.wmm.wml.2 <- glmer(
+    pv.accuracy ~ 1 + pv.modality + wm.load + mod.same +
+      pv.modality:mod.same + mod.same:wm.load + pv.modality:wm.load +
+      pv.modality:mod.same:wm.load +
+      (1 | participant_id) + 
+      (mod.same + wm.load + mod.same:wm.load | item_id),
+    data = vipv %>% filter(wm.accuracy == 1) %>% mutate(mod.same = wm.modality == pv.modality),
+    family="binomial", control=optimxglmerControl)
+
+summary(m.vipv.pv.acc.wmm.wml.2)
+
+```
+
+
+We take the random slope for the domainVisual effect for each participant in a linear model.
+
+```{r}
+
+item.ranef.2 = ranef(m.vipv.pv.acc.wmm.wml.2)$item_id
+
+item.ranef.2 <- item.ranef.2 %>%
+  mutate(item_id = rownames(item.ranef.2))
+
+item.ranef.2$ixn.full = item.ranef.2$`mod.sameTRUE:wm.load3` + fixef(m.vipv.pv.acc.wmm.wml.2)["wm.load3:mod.sameTRUE"]
+
+```
+
+There is a some variance in the effect by participant, with participants varying from `r min(ppt.ranef$ixn.full)` to `r max(ppt.ranef$ixn.full)`.
+
+```{r}
+
+item.ranef.2 %>%
+  ggplot(aes(x = reorder(item_id, -ixn.full), y = ixn.full)) +
+  geom_hline(yintercept=fixef(m.vipv.pv.acc.wmm.wml.2)["wm.load3:mod.sameTRUE"], color="red", linetype="dashed") +
+  geom_point() + 
+  theme_minimal() + 
+  theme(
+    axis.text.x = element_blank()
+  ) + 
+  labs(
+    subtitle = "Item Random Slopes for 2-way Interaction Effect",
+    title = "PV Accuracy Random Slopes",
+    y = "2-way Interaction Effect (Fixed Effect + Random Slope)",
+    x = "Participant Id",
+    caption = "Red dashed line represents fixed effect"
+  )
+
+```
+
+```{r}
+
+items.2 <- merge(stimuli, item.ranef.2, by="item_id", all.y=F) %>%
+  rename(spl_gpt3 = spl_gpt3.text.davinci.002_title)
+
+```
+
+### Correlation of Surprisal and Random Slopes
+
+#### WM Load
+
+(sense check), there is a _negative_ relationship between GPT-3 surprisal and the effect of WM load on accuracy. This makes sense as more surprising endings cause higher load to have a bigger (negative) impact on accuracy.
+
+```{r}
+
+items.2 %>%
+  ggplot(aes(x = spl_gpt3, y = wm.load3)) +
+  geom_point() +
+  geom_smooth(method="lm", formula="y~x") + 
+  # facet_wrap(facets=vars(factor)) + 
+  theme_minimal() +
+  labs(
+    # title="IRQ vs PR Domain ∆",
+    # subtitle = "By-Participant",
+    # x = "IRQ Dimension Score",
+    # y = "PR Accuracy Domain ∆ (Visual - Social)"
+    )
+
+```
+
+### Modality same
+
+Same for modality-same main effect (more surprising endings cause a bigger neg impact of same mod on pv accuracy).
+
+```{r}
+
+items.2 %>%
+  ggplot(aes(x = spl_gpt3, y = mod.sameTRUE)) +
+  geom_point() +
+  geom_smooth(method="lm", formula="y~x") + 
+  # facet_wrap(facets=vars(code1_pv_modality)) +
+  theme_minimal() +
+  labs(
+    # title="IRQ vs PR Domain ∆",
+    # subtitle = "By-Participant",
+    # x = "IRQ Dimension Score",
+    # y = "PR Accuracy Domain ∆ (Visual - Social)"
+    )
+
+```
+
+
+### 2-way interaction
+
+But for the 2-way interaction we see the opposite effect, participants show a more positive effect of the two way interaction (modality.sameTRUE:wm.load3) on accuracy when properties are less predictable.
+
+```{r}
+
+items.2 %>%
+  ggplot(aes(x = spl_gpt3, y = `mod.sameTRUE:wm.load3`)) +
+  geom_point() +
+  geom_smooth(method="lm", formula="y~x") + 
+  # facet_wrap(facets=vars(code1_pv_modality)) +
+  theme_minimal() +
+  labs(
+    # title="IRQ vs PR Domain ∆",
+    # subtitle = "By-Participant",
+    # x = "IRQ Dimension Score",
+    # y = "PR Accuracy Domain ∆ (Visual - Social)"
+    )
+
+```
+
+
+Simple linear models show no effect of either variable.
+
+```{r results="hold"}
+
+summary(lm(mod.sameTRUE ~ spl_gpt3, data=items.2))
+summary(lm(ixn.full ~ spl_gpt3, data=items.2))
+
+```
+
+# IRQ
+
+## Preprocess
+
+```{r}
+
+irq.attention.answers <- data.frame(
+  item_id = c(37, 38, 39),
+  correct_response = c(1,5,1))
+
+irq.all <- irq.all %>%
+  mutate(item_type = recode(item_type, catch = "attention"))
+
+ppts.all <- exclude.ppts.attention(ppts.all, irq.all, irq.attention.answers, "irq", cutoff.irq.attention)
+
+```
+
+`r round(nrow(ppts.all %>% filter(irq.attention.accuracy>0.66)) / nrow(ppts.all), 2) * 100`% of ppts got > 66% IRQ attention checks correct.
+
+```{r}
+
+ppts.all %>%
+  ggplot(aes(x = irq.attention.accuracy)) + 
+  geom_histogram() + 
+  theme_minimal() + 
+  labs(
+    x = "IRQ Attention Accuracy",
+    y = "No. Participants"
+  )
+
+```
+
+Participants who failed IRQ attention check.
+
+```{r}
+
+ppts.all %>%
+  filter(irq.attention.accuracy < 0.66) %>%
+  select(participant_id, irq.attention.accuracy)
+
+```
+
+IRQ Accuracy by question
+
+```{r}
+
+irq.all %>%
+  filter(item_type == "attention") %>%
+  merge(irq.attention.answers) %>%
+  mutate(accuracy = ifelse(response == correct_response, 1, 0)) %>%
+  group_by(item_id) %>%
+  summarize(accuracy = mean(accuracy), .groups="drop")
+
+```
+
+
+```{r}
+irq.all <- irq.all %>% 
+  
+  filter(participant_id %in% ppts$id,  # Remove trials from excluded participants
+         item_type != "attention"  # Remove catch trials 
+  ) %>%
+  
+  # Exclude extreme rts
+  # exclude.relative.by.ppt(reaction_time, rt.rel.sd) %>%
+  exclude.absolute.by.ppt(reaction_time, rt.abs.min.irq, rt.abs.max.irq)
+
+
+res = exclude.ppt.ex.trials(
+  ppts.all, irq.all, cutoff.removed.trials, "ex.irq.ex.trials")
+
+ppts.all <- res$ppts
+irq.all <- res$trials
+
+irq <- irq.all %>% filter(excluded==FALSE)
+
+summarise.exclusions(irq.all)
+```
+
+## EFA
+
+Pivot the IRQ question data into (item x ppt response)
+
+```{r}
+
+irq <- irq.all %>%
+  filter(participant_id %in% ppts$id)
+
+irq.qs <- irq %>%
+  select(item_id, response, participant_id) %>%
+  pivot_wider(names_from=item_id, values_from=response) %>%
+  arrange(participant_id) %>%
+  select(-participant_id) %>%
+  select(order(as.numeric(colnames(.))))
+  # data.frame()
+  
+  
+
+# Reverse loadings for reversed q's
+irq.qs[10] = 6 - irq.qs[10]
+irq.qs[19] = 6 - irq.qs[19]
+irq.qs[33] = 6 - irq.qs[33]
+
+# irq.qs
+
+```
+
+Parallel analysis recommends 2 factors.
+
+```{r}
+
+fa.parallel(irq.qs)
+
+```
+
+Re-performing FA  with 4 factors seems to produce similar-looking loadings to the original paper (in the same order, i.e. MR1=verbal, MR2=orthographics, MR3=visual, MR4=manipulation)
+
+```{r}
+
+irq.fa.4 <- psych::fa(irq.qs, nfactors=4,
+                      rotate="oblimin",  # Oblique rotation as in original paper
+                      fm="minres"  # Default minimum residual factoring method
+                      )
+loadings <- irq.fa.4$loadings
+
+loadings <- as.data.frame(loadings[1:36,1:4])
+loadings$item_id <- row.names(loadings)
+
+loadings$item.factor <- c(rep("Visual", 10), rep("Verbal", 12), rep("Orthographic", 6), rep("Manipulation", 8))
+
+loadings.pivot <- loadings %>%
+  pivot_longer(cols=c(MR1, MR2, MR3, MR4),
+               names_to="Factor", values_to="Loading New")
+
+loadings.pivot %>%
+  ggplot(aes(x = Factor, y = `Loading New`, color=item.factor)) + 
+  stat_summary(fun.data=mean_se, geom="pointrange")
+  # geom_point(stat="identity", position="dodge")
+
+# loadings
+```
+
+
+Compare loadings for each item between original and new data analysis. The match looks fairly good visually, the same set of items in the high end of each axis.
+
+```{r}
+
+colnames(loadings) <- c("Verbal", "Orthographic", "Visual", "Manipulation", "item_id")
+
+irq.og$item.factor <- c(rep("Visual", 10), rep("Verbal", 12), rep("Orthographic", 6), rep("Manipulation", 8), rep("Filler", 3))
+
+irq.og.loadings <- irq.og %>%
+  filter(item_type == "critical") %>%  # remove fillers
+  select(item_id, item.factor, Visual, Verbal, Orthographic, Manipulation)
+
+loadings.pivot <- loadings %>%
+  select(Visual, Verbal, Orthographic, Manipulation, item_id) %>%
+  pivot_longer(cols=c(Visual, Verbal, Orthographic, Manipulation),
+               names_to="Factor", values_to="Loading New")
+
+loadings.og.pivot <- irq.og.loadings %>%
+  pivot_longer(cols=c(Visual, Verbal, Orthographic, Manipulation),
+               names_to="Factor", values_to="Loading OG")
+
+loadings.all <- merge(loadings.pivot, loadings.og.pivot)
+
+loadings.all %>%
+  ggplot(aes(x = `Loading OG`, y = `Loading New`, color=item.factor)) + 
+  geom_point() + 
+  geom_text(aes(label=item_id), nudge_x = 0.03, nudge_y = 0.03) +
+  facet_wrap(facets=vars(Factor)) + 
+  theme_minimal()
+
+```
+
+Merge IRQ data onto ppts:
+
+I'm using EFA fit as it seems to be what was used in the original paper.
+
+```{r}
+
+# Merge ppt scores
+ppt.scores <- as.data.frame(irq.fa.4$scores)
+colnames(ppt.scores) <- c("Verbal", "Orthographic", "Visual", "Manipulation")
+
+ppts <- cbind(ppts,ppt.scores)
+
+```
+
+
+## Get ppt variance measures
+
+### Participant Random Slopes
+
+
+```{r}
+
+m.vipv.pv.acc.ixn <- glmer(
+    pv.accuracy ~ 1 + pv.modality + wm.modality + wm.load + 
+      pv.modality:wm.modality + wm.modality:wm.load + pv.modality:wm.load +
+      pv.modality:wm.modality:wm.load +
+      (
+        pv.modality + wm.modality + wm.load + 
+      pv.modality:wm.modality + wm.modality:wm.load + pv.modality:wm.load +
+        pv.modality:wm.modality:wm.load | participant_id) + (1 | item_id),
+    data = vipv %>% filter(wm.accuracy == 1),
+    family="binomial", control=optimxglmerControl)
+
+summary(m.vipv.pv.acc.ixn)
+
+```
+
+
+We take the random slope for the domainVisual effect for each participant in a linear model.
+
+```{r}
+
+ppt.ranef = ranef(m.vipv.pv.acc.ixn)$participant_id
+
+ppt.ranef <- ppt.ranef %>%
+  mutate(participant_id = rownames(ppt.ranef))
+
+ppt.ranef$ixn.full = ppt.ranef$`pv.modalityau:wm.modalityau:wm.load3` + fixef(m.vipv.pv.acc.ixn)["pv.modalityau:wm.modalityau:wm.load3"]
+
+```
+
+There is a some variance in the effect by participant, with participants varying from `r min(ppt.ranef$ixn.full)` to `r max(ppt.ranef$ixn.full)`.
+
+```{r}
+
+ppt.ranef %>%
+  ggplot(aes(x = reorder(participant_id, -ixn.full), y = ixn.full)) +
+  geom_hline(yintercept=fixef(m.vipv.pv.acc.ixn)["pv.modalityau:wm.modalityau:wm.load3"], color="red", linetype="dashed") +
+  geom_point() + 
+  theme_minimal() + 
+  theme(
+    axis.text.x = element_blank()
+  ) + 
+  labs(
+    subtitle = "Participant Random Slopes for 3-way Interaction Effect",
+    title = "PV Accuracy Random Slopes",
+    y = "3-way Interaction Effect (Fixed Effect + Random Slope)",
+    x = "Participant Id",
+    caption = "Red dashed line represents fixed effect"
+  )
+
+```
+
+
+
+```{r}
+
+ppts <- merge(ppts, ppt.ranef, by="participant_id", all.y=F)
+
+```
+
+## Correlation of IRQ and Random Slopes
+
+### 3-way interaction
+
+Correlations of IRQ w/ ppt random-slopes don't show much of interest.
+
+```{r}
+
+ppts %>%
+  pivot_longer(cols=c(Visual, Verbal, Orthographic, Manipulation), names_to="factor", values_to="score") %>%
+  ggplot(aes(x = score, y = ixn.full)) +
+  geom_point() +
+  geom_smooth(method="lm", formula="y~x") + 
+  facet_wrap(facets=vars(factor)) + 
+  theme_minimal() +
+  labs(
+    # title="IRQ vs PR Domain ∆",
+    # subtitle = "By-Participant",
+    # x = "IRQ Dimension Score",
+    # y = "PR Accuracy Domain ∆ (Visual - Social)"
+    )
+
+```
+
+
+Simple linear models show no effect of either variable.
+
+```{r results="hold"}
+
+summary(lm(ixn.full ~ Visual, data=ppts))
+summary(lm(ixn.full ~ Manipulation, data=ppts))
+
+```
+
+### WM modality
+
+We hypothesized that verbalizers would show a bigger main effect of WM modality, because auditory info would interfere with their default representation strategy. However, that relationship doesn't look clear in these data.
+
+Could be a negative relationship between Orthographic and modality.au effect (on pv accuracy).
+
+```{r}
+
+ppts %>%
+  pivot_longer(cols=c(Visual, Verbal, Orthographic, Manipulation), names_to="factor", values_to="score") %>%
+  ggplot(aes(x = score, y = wm.modalityau)) +
+  geom_point() +
+  geom_smooth(method="lm", formula="y~x") + 
+  facet_wrap(facets=vars(factor)) + 
+  theme_minimal() +
+  labs(
+    # title="IRQ vs PR Domain ∆",
+    # subtitle = "By-Participant",
+    # x = "IRQ Dimension Score",
+    # y = "PR Accuracy Domain ∆ (Visual - Social)"
+    )
+
+```
+
+
+Simple linear models show no effect of either variable.
+
+```{r results="hold"}
+
+summary(lm(wm.modalityau ~ Verbal, data=ppts))
+summary(lm(wm.modalityau ~ Orthographic, data=ppts))
+
+
+```
+
+### PV modality
+
+Exploratory.
+
+Again, high orthographic loading correlates with a negative effect of pv-au (less accurate on auditory stimuli). Not sure why this would be the case
+
+```{r}
+
+ppts %>%
+  pivot_longer(cols=c(Visual, Verbal, Orthographic, Manipulation), names_to="factor", values_to="score") %>%
+  ggplot(aes(x = score, y = pv.modalityau)) +
+  geom_point() +
+  geom_smooth(method="lm", formula="y~x") + 
+  facet_wrap(facets=vars(factor)) + 
+  theme_minimal() +
+  labs(
+    # title="IRQ vs PR Domain ∆",
+    # subtitle = "By-Participant",
+    # x = "IRQ Dimension Score",
+    # y = "PR Accuracy Domain ∆ (Visual - Social)"
+    )
+
+```
+
+
+Simple linear models show no effect of either variable.
+
+```{r results="hold"}
+
+summary(lm(pv.modalityau ~ Orthographic, data=ppts))
+
+
+```
+
+### PV modality x WM modality
+
+Exploratory.
+
+Orthographic shows the steepest relationship here too, but all seem to be pushed about by these two extreme points.
+
+```{r}
+
+ppts %>%
+  pivot_longer(cols=c(Visual, Verbal, Orthographic, Manipulation), names_to="factor", values_to="score") %>%
+  ggplot(aes(x = score, y = `pv.modalityau:wm.modalityau`)) +
+  geom_point() +
+  geom_smooth(method="lm", formula="y~x") + 
+  facet_wrap(facets=vars(factor)) + 
+  theme_minimal() +
+  labs(
+    # title="IRQ vs PR Domain ∆",
+    # subtitle = "By-Participant",
+    # x = "IRQ Dimension Score",
+    # y = "PR Accuracy Domain ∆ (Visual - Social)"
+    )
+
+```
+
+
+Simple linear models show no effect of either variable.
+
+```{r results="hold"}
+
+summary(lm(`pv.modalityau:wm.modalityau` ~ Manipulation, data=ppts))
+summary(lm(`pv.modalityau:wm.modalityau` ~ Orthographic, data=ppts))
+
+
+```

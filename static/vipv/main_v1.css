@@ -473,6 +473,7 @@ label.radio.debrief {
     cursor: pointer;
     transition: box-shadow 0.1s;
     border-radius: 0 8px 8px 0px;
+    width: 30px;
 }
 
 div#code {

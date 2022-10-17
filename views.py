@@ -17,9 +17,11 @@ from django.utils import timezone as tz
 from django.conf import settings
 from django.contrib.auth.decorators import user_passes_test
 from sklearn.model_selection import train_test_split
+import boto3
 
 from vipv.models import (Participant, Rating, BinaryChoice)
-from vipv.secrets import SONA_EXPT_ID, SONA_CREDIT_TOKEN
+from vipv.secrets import (SONA_EXPT_ID, SONA_CREDIT_TOKEN, AWS_ACCESS_KEY_ID,
+                          AWS_SECRET_ACCESS_KEY)
 from vipv.data.words import wordlist
 
 """
@@ -287,6 +289,54 @@ def store_debrief(data, ppt):
     ppt.save()
 
 
+def update_mturk(ppt):
+    """Grant qualification to worker to prevent future HITs."""
+    client = boto3.client(
+        'mturk',
+        region_name="us-east-1",
+        aws_access_key_id=AWS_ACCESS_KEY_ID,
+        aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
+    )
+
+    # try:
+    #     # Approve assignment
+    #     approve_response = client.approve_assignment(
+    #         AssignmentId=ppt.assignment_id,
+    #         RequesterFeedback='Thanks again for your help',
+    #         OverrideRejection=False
+    #     )
+
+    #     approve_status = approve_response["ResponseMetadata"]["HTTPStatusCode"]
+
+    #     ppt.notes = ppt.notes + str(approve_response) + "\n"
+
+    # except Exception as e:
+    #     approve_status = "Error"
+    #     ppt.notes = ppt.notes + str(e) + "\n"
+
+    try:
+        # Block future HITs
+        block_response = client.associate_qualification_with_worker(
+            QualificationTypeId='3GNL8ZDCG6N1PUOYDZQY9HUQXUMIOJ',
+            WorkerId=ppt.worker_id,
+            IntegerValue=1,
+            SendNotification=False
+        )
+
+        block_status = block_response["ResponseMetadata"]["HTTPStatusCode"]
+        ppt.notes = ppt.notes + str(block_response) + "\n"
+
+    except Exception as e:
+        block_status = "Error"
+        ppt.notes = ppt.notes + str(e) + "\n"
+
+    ppt.save()
+
+    success = True if block_status == 200 else False
+
+    return success
+
+
 def save_results(request):
     """Save results to db."""
     # Get posted data
@@ -310,7 +360,8 @@ def save_results(request):
     ppt.end_time = tz.now()
 
     if ppt.mturk:
-        status = {"success": True, "credit": "Not granted",
+        success = update_mturk(ppt)
+        status = {"success": success, "credit": "Not granted",
                   "mturkCode": ppt.key}
 
     elif ppt.SONA_code == "":
@@ -420,7 +471,8 @@ def expt1a(request):
     tasks = load_task_data(**limits)
 
     # Create view context
-    conf = {"ppt_id": ppt.id, "practice": practice, "intro": intro}
+    conf = {"ppt_id": ppt.id, "practice": practice, "intro": intro,
+            "mturk": ppt.mturk, "key": ppt.key}
     context = {"tasks": tasks, "conf": conf}
 
     # Return view
